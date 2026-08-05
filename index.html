@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <title>좌석·시설 찾기</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
     --ink:#1b2430;
@@ -133,6 +134,8 @@
     display:flex;
     gap:6px;
     margin-top:12px;
+    flex-wrap:wrap;
+    align-items:center;
   }
   .tab{
     padding:7px 16px;
@@ -155,6 +158,106 @@
     opacity:0.7;
     margin-left:4px;
   }
+  /* 버튼 그룹 구분: 도구 그룹은 왼쪽 여백으로 살짝 띄움 */
+  .tab-tools{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-left:auto;
+  }
+  /* 해외점포 드롭다운 */
+  .overseas-wrap{ position:relative; display:inline-block; }
+  .overseas-btn{
+    padding:7px 16px;
+    border:1px solid var(--line);
+    border-radius:20px;
+    background:var(--white);
+    color:var(--gray);
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .overseas-btn:hover{
+    border-color:var(--gray);
+    color:var(--ink);
+  }
+  .overseas-menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    left:0;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.15);
+    padding:6px;
+    z-index:120;
+    min-width:200px;
+    max-height:340px;
+    overflow-y:auto;
+    display:none;
+  }
+  .overseas-menu.show{ display:block; }
+  .overseas-item{
+    padding:9px 12px;
+    border-radius:8px;
+    font-size:13.5px;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .overseas-item:hover{ background:var(--paper); }
+  .overseas-item.coming{ color:#aaa; cursor:default; }
+  .overseas-item.coming:hover{ background:transparent; }
+  .overseas-item.draft{ color:#aaa; }
+  .overseas-badge{
+    font-size:10.5px;
+    padding:2px 7px;
+    border-radius:10px;
+    background:#eee;
+    color:#999;
+    white-space:nowrap;
+  }
+  .overseas-badge.ready{ background:#d8f5f0; color:#1f8577; }
+  @media (max-width:600px){
+    .tab-tools{ margin-left:0; width:100%; margin-top:4px; }
+    .overseas-menu{ min-width:170px; }
+  }
+  /* 해외점포 상세 (정보형 카드) */
+  .branch-info-box{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    margin:10px 0 12px;
+    font-size:13px;
+    line-height:1.6;
+  }
+  .branch-info-box .bi-row{ display:flex; gap:8px; }
+  .branch-info-box .bi-label{ color:var(--gray); min-width:44px; flex-shrink:0; }
+  .staff-card{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .staff-card.hl{ outline:2px solid var(--accent); }
+  .staff-card .sc-name{ font-weight:600; font-size:14px; }
+  .staff-card .sc-meta{ font-size:12px; color:var(--gray); margin-top:3px; line-height:1.5; }
+  .staff-card .sc-actions{ display:flex; gap:2px; flex-shrink:0; }
+  .staff-card .sc-actions button{
+    border:none; background:transparent; cursor:pointer; font-size:14px; color:var(--gray);
+    padding:2px 5px; border-radius:5px;
+  }
+  .staff-card .sc-actions button:hover{ color:var(--ink); background:var(--paper); }
+  .branch-empty{ font-size:13px; color:var(--gray); text-align:center; padding:18px 0; }
 
   .backup-row{
     display:flex;
@@ -251,6 +354,48 @@
     background:var(--accent);
     color:var(--white);
   }
+  .branch-info-toggle{
+    padding:8px 16px;
+    border-radius:20px;
+    border:1.5px solid #2f6f8f;
+    background:var(--white);
+    color:#2f6f8f;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .branch-info-toggle:hover{ background:#eaf3f7; }
+  .branch-pub-badge{
+    font-size:12px;
+    font-weight:700;
+    padding:5px 10px;
+    border-radius:14px;
+    background:#f0ede6;
+    color:#a08c6a;
+  }
+  .branch-pub-badge.on{ background:#dff3ec; color:#1f8577; }
+  .branch-pub-toggle{
+    padding:8px 16px;
+    border-radius:20px;
+    border:1.5px solid #b58a4a;
+    background:#fff;
+    color:#9a6f2e;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .branch-pub-toggle:hover{ background:#fbf3e6; }
+  .branch-pub-toggle.on{
+    border-color:#4fb8a8;
+    color:#1f8577;
+  }
+  .branch-pub-toggle.on:hover{ background:#eafaf5; }
+  .locker-add-btn{
+    border-color:#a8794a !important;
+    color:#8a5a2a !important;
+    background:#fff !important;
+  }
+  .locker-add-btn:hover{ background:#f7efe4 !important; }
   .add-hint{
     font-size:12.5px;
     color:var(--gray);
@@ -403,6 +548,20 @@
     background:var(--accent-soft);
     border-radius:8px;
   }
+  .legend-category.is-empty .legend-cat-items{
+    min-height:34px;
+    border:1.5px dashed var(--line);
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+  }
+  .legend-empty-hint{
+    font-size:11.5px;
+    color:#b0b0a8;
+    padding:0 8px;
+    pointer-events:none;
+    font-style:italic;
+  }
   .marker{
     position:absolute;
     transform:translate(-50%,-50%);
@@ -418,6 +577,17 @@
   .marker.empty{background:#b7b39f;}
   .marker.filled{background:var(--accent);}
   .marker.seat{background:var(--accent);width:14px;height:14px;}
+  .marker.locker{
+    background:#b5651d;
+    width:15px;height:15px;
+    border-radius:3px;
+    border:2px solid #fff;
+    box-shadow:0 0 0 1px #8a4c14;
+  }
+  .marker.locker.highlight{box-shadow:0 0 0 3px #e0362b, 0 0 0 4px #fff;}
+  .marker.locker.locker-draggable{cursor:grab;}
+  .marker.locker.locker-draggable:active{cursor:grabbing;}
+  .marker.locker.dragging{opacity:0.6;box-shadow:0 0 0 3px #b5651d, 0 0 0 5px rgba(181,101,29,0.3);}
   .marker.seat.room-type{
     background:#2f6f8f;
     border-radius:6px;
@@ -456,6 +626,12 @@
     animation:pulse-red 1s ease-in-out infinite;
     z-index:30;
   }
+  /* 해외점포는 사무실이 작아 도형이 상대적으로 작게 보이므로, 해당 층에서만 마커를 크게 표시 */
+  .overseas-floor .marker.seat{ width:26px; height:26px; border-width:3px; }
+  .overseas-floor .marker.seat.room-type{ width:30px; height:30px; }
+  .overseas-floor .marker.seat.facility-type{ width:26px; height:26px; }
+  .overseas-floor .marker.zone{ width:32px; height:32px; }
+  .overseas-floor .marker.locker{ width:24px; height:24px; }
   @keyframes pulse-red{
     0%{box-shadow:0 0 0 0 rgba(224,54,43,0.7); opacity:1;}
     50%{box-shadow:0 0 0 14px rgba(224,54,43,0); opacity:0.55;}
@@ -551,6 +727,18 @@
   }
   .popover.show{display:block;}
   .popover.wide{width:420px;max-width:calc(100vw - 20px);}
+  .visit-stat-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:11px 4px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .visit-stat-row b{ font-size:17px; color:var(--ink); font-family:var(--mono); }
+  .visit-stat-row.total{ border-bottom:none; }
+  .visit-stat-row.total b{ color:var(--accent); }
+  .visit-sub{ color:var(--gray); font-size:11px; font-weight:400; }
   .help-content h4{
     font-size:13.5px;
     margin:14px 0 6px;
@@ -844,12 +1032,16 @@
     <div class="tabs" id="tabs"></div>
     <div class="backup-row">
       <span id="adminOnlyBtns">
+        <button class="backup-btn" id="undoBtn" style="display:none;">↩ 실행 취소</button>
         <button class="backup-btn" id="changeLogBtn">📋 수정 목록</button>
         <button class="backup-btn" id="exportBtn">⬇ 백업 내보내기</button>
         <button class="backup-btn" id="importBtn">⬆ 백업 가져오기</button>
+        <button class="backup-btn" id="rosterBtn">📋 명단 엑셀 업로드</button>
         <button class="backup-btn" id="syncBtn">🔄 명단 동기화</button>
+        <button class="backup-btn" id="visitStatsBtn">📊 방문자 통계</button>
       </span>
       <input type="file" id="importFile" accept=".json" style="display:none;">
+      <input type="file" id="rosterFile" accept=".xlsx,.xls" style="display:none;">
       <span class="backup-hint" id="modeHint">작업 중간중간 내보내기를 눌러 저장해 두세요</span>
     </div>
   </header>
@@ -875,8 +1067,20 @@
 const FLOOR_IMAGES = {
   "4F": "4F.jpg",
   "5F": "5F.jpg",
-  "7F": "7F.jpg"
+  "7F": "7F.jpg",
+  "usa": "usa.png",
+  "swiss": "swiss.jpg",
+  "shanghai": "shanghai.png",
+  "singapore": "singapore.png",
+  "tokyo": "tokyo.png",
+  "london": "london.jpeg"
 };
+let LOCKERS = [{"id": "locker_4F_0", "floor": "4F", "team": "해외사업관리팀", "zone": "4C", "range": "01~12", "count": "12개", "x": 25.7, "y": 33.0}, {"id": "locker_4F_1", "floor": "4F", "team": "정산팀", "zone": "4C", "range": "13~36", "count": "24개", "x": 25.7, "y": 35.2}, {"id": "locker_4F_2", "floor": "4F", "team": "해외특약2팀", "zone": "4C", "range": "37~48", "count": "12개", "x": 25.7, "y": 37.4}, {"id": "locker_4F_3", "floor": "4F", "team": "해외특약1팀", "zone": "4C", "range": "49~60", "count": "12개", "x": 35.9, "y": 34.1}, {"id": "locker_4F_4", "floor": "4F", "team": "해외특종자동차팀", "zone": "4C", "range": "61~72", "count": "12개", "x": 35.9, "y": 36.3}, {"id": "locker_4F_5", "floor": "4F", "team": "해외임의1팀", "zone": "4C", "range": "73~84", "count": "12개", "x": 71.3, "y": 30.8}, {"id": "locker_4F_6", "floor": "4F", "team": "해외임의2팀", "zone": "4C", "range": "85~98", "count": "14개", "x": 71.3, "y": 33.0}, {"id": "locker_4F_7", "floor": "4F", "team": "감사팀", "zone": "4C", "range": "99~103", "count": "5개", "x": 71.3, "y": 35.2}, {"id": "locker_4F_8", "floor": "4F", "team": "법무팀", "zone": "4C", "range": "104~108", "count": "5개", "x": 71.3, "y": 37.4}, {"id": "locker_4F_9", "floor": "4F", "team": "준법감시팀", "zone": "4C", "range": "109~116", "count": "8개", "x": 71.3, "y": 39.6}, {"id": "locker_4F_10", "floor": "4F", "team": "정보기술팀", "zone": "4W", "range": "01~27", "count": "27개", "x": 11.7, "y": 79.2}, {"id": "locker_5F_11", "floor": "5F", "team": "상품개발팀", "zone": "5C", "range": "01~15", "count": "15개", "x": 28.0, "y": 24.9}, {"id": "locker_5F_12", "floor": "5F", "team": "국내생명보험팀", "zone": "5C", "range": "16~30", "count": "15개", "x": 32.4, "y": 25.3}, {"id": "locker_5F_13", "floor": "5F", "team": "해외생명보험팀", "zone": "5C", "range": "31~42", "count": "12개", "x": 32.4, "y": 27.5}, {"id": "locker_5F_14", "floor": "5F", "team": "장기보험팀", "zone": "5C", "range": "43~48", "count": "6개", "x": 32.4, "y": 29.7}, {"id": "locker_5F_15", "floor": "5F", "team": "기획실", "zone": "5C", "range": "49~67", "count": "19개", "x": 78.9, "y": 32.0}, {"id": "locker_5F_16", "floor": "5F", "team": "인사총무팀", "zone": "5C", "range": "68~90", "count": "23개", "x": 78.9, "y": 34.2}, {"id": "locker_5F_17", "floor": "5F", "team": "특종보험팀", "zone": "5W", "range": "01~24", "count": "24개", "x": 19.0, "y": 55.5}, {"id": "locker_5F_18", "floor": "5F", "team": "기술해상보험팀", "zone": "5W", "range": "25~44", "count": "24개", "x": 18.2, "y": 67.7}, {"id": "locker_5F_19", "floor": "5F", "team": "손사위험팀", "zone": "5W", "range": "45~74", "count": "30개", "x": 28.2, "y": 66.2}, {"id": "locker_5F_20", "floor": "5F", "team": "위험자본솔루션팀", "zone": "5W", "range": "75~94", "count": "20개", "x": 32.2, "y": 66.2}, {"id": "locker_5F_21", "floor": "5F", "team": "자동차특수보험팀", "zone": "5W", "range": "95~106", "count": "12개", "x": 32.9, "y": 66.2}, {"id": "locker_5F_22", "floor": "5F", "team": "재물보험팀", "zone": "5W", "range": "107~126", "count": "20개", "x": 34.7, "y": 66.2}, {"id": "locker_5F_23", "floor": "5F", "team": "계리팀", "zone": "5E", "range": "01~15", "count": "15개", "x": 71.9, "y": 66.2}, {"id": "locker_5F_24", "floor": "5F", "team": "결산회계팀", "zone": "5E", "range": "16~30", "count": "15개", "x": 73.8, "y": 64.0}, {"id": "locker_5F_25", "floor": "5F", "team": "보험금융연구소", "zone": "5E", "range": "31~42", "count": "12개", "x": 74.3, "y": 66.2}, {"id": "locker_5F_26", "floor": "5F", "team": "손익분석팀", "zone": "5E", "range": "43~60", "count": "18개", "x": 74.3, "y": 68.4}, {"id": "locker_5F_27", "floor": "5F", "team": "리스크관리팀", "zone": "5E", "range": "61~78", "count": "18개", "x": 87.6, "y": 67.3}, {"id": "locker_5F_28", "floor": "5F", "team": "금융재보험팀", "zone": "5E", "range": "79~90", "count": "12개", "x": 89.6, "y": 67.2}, {"id": "locker_7F_29", "floor": "7F", "team": "미배정", "zone": "7A", "range": "01~06", "count": "6개", "x": 84.1, "y": 13.5}, {"id": "locker_7F_30", "floor": "7F", "team": "운용기획팀", "zone": "7A", "range": "07~18", "count": "11개", "x": 84.1, "y": 15.7}, {"id": "locker_7F_32", "floor": "7F", "team": "자산운용팀", "zone": "7B", "range": "19~30", "count": "12개", "x": 84.1, "y": 20.1}];
+
+// 기본 락커 배치(코드에 내장). 관리자가 수정/삭제/추가한 내용은 구글 시트에 저장되고,
+// rebuildLockers()에서 이 기본값 위에 덮어써서 최종 LOCKERS를 만든다.
+const DEFAULT_LOCKERS = JSON.parse(JSON.stringify(LOCKERS));
+
 const DATA = {
  "employees": [],
  "deptAnchors": {
@@ -1303,6 +1507,36 @@ const DATA = {
      "y": 23.24
     }
    ]
+  },
+  "usa": {
+   "execOffices": [],
+   "zones": [],
+   "deptZones": []
+  },
+  "swiss": {
+   "execOffices": [],
+   "zones": [],
+   "deptZones": []
+  },
+  "shanghai": {
+   "execOffices": [],
+   "zones": [],
+   "deptZones": []
+  },
+  "singapore": {
+   "execOffices": [],
+   "zones": [],
+   "deptZones": []
+  },
+  "tokyo": {
+   "execOffices": [],
+   "zones": [],
+   "deptZones": []
+  },
+  "london": {
+   "execOffices": [],
+   "zones": [],
+   "deptZones": []
   }
  },
  "roomAnchors": {
@@ -1522,18 +1756,69 @@ const DATA = {
     "y": 33.76,
     "aliases": []
    }
-  ]
+  ],
+  "usa": [],
+  "swiss": [],
+  "shanghai": [],
+  "singapore": [],
+  "tokyo": [],
+  "london": []
  }
 };
 
 const ADMIN_PIN = '2026'; // soft gate only - change this string to set a new PIN
 let isAdmin = false;
 
+// ── 1단계 실행 취소 ──────────────────────────────
+// 관리자가 좌석을 추가/수정/삭제하기 직전에, 해당 층의 좌석 배열 전체를 스냅샷으로 저장해 둔다.
+// "실행 취소"를 누르면 그 스냅샷으로 되돌린다. 한 번만 되돌릴 수 있고, 새 작업을 하면 스냅샷이 갱신된다.
+let undoState = null; // { floor, snapshot:[...], label:'...' }
+
+function snapshotForUndo(floor, label){
+  // deep copy - 되돌릴 때 원본이 바뀌어도 안전하도록
+  undoState = {
+    floor,
+    snapshot: JSON.parse(JSON.stringify(seats[floor])),
+    label
+  };
+  updateUndoButton();
+}
+
+function clearUndo(){
+  undoState = null;
+  updateUndoButton();
+}
+
+function updateUndoButton(){
+  const btn = document.getElementById('undoBtn');
+  if(!btn) return;
+  if(isAdmin && undoState){
+    btn.style.display = 'inline';
+    btn.textContent = `↩ 실행 취소`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function doUndo(){
+  if(!undoState) return;
+  const { floor, snapshot, label } = undoState;
+  openConfirmPopover(`방금 작업(${label})을 취소하고 이전 상태로 되돌릴까요?\n\n※ 되돌린 뒤 그 사이 다른 사람이 수정한 내용이 있었다면 함께 영향을 받을 수 있어요.`, async ()=>{
+    seats[floor] = snapshot;
+    await persistFloorSeats(floor);
+    clearUndo();
+    renderAll();
+    showToast('이전 상태로 되돌렸어요');
+  });
+}
+
+
 let currentFloor = "5F";
-let seats = { "4F":[], "5F":[], "7F":[] }; // dynamic, user-placed pins: {id, x, y, name, position, ext}
-let addMode = { "4F":false, "5F":false, "7F":false };
-let alignMode = { "4F":false, "5F":false, "7F":false };
-let selectedSeats = { "4F":new Set(), "5F":new Set(), "7F":new Set() };
+let seats = { "4F":[], "5F":[], "7F":[], "usa":[], "swiss":[], "shanghai":[], "singapore":[], "tokyo":[], "london":[] }; // dynamic, user-placed pins: {id, x, y, name, position, ext}
+let addMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false };
+let lockerAddMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false };
+let alignMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false };
+let selectedSeats = { "4F":new Set(), "5F":new Set(), "7F":new Set(), "usa":new Set(), "swiss":new Set(), "shanghai":new Set(), "singapore":new Set(), "tokyo":new Set(), "london":new Set() };
 let searchDebounce = null;
 let highlighted = null; // {floor, ids:[...], anchor:{x,y,label} optional}
 let highlightTimer = null;
@@ -1659,6 +1944,19 @@ async function loadEmployees(){
     console.error('failed to load employee roster', e);
     return null;
   }
+}
+
+async function saveEmployees(list){
+  // 명단을 구글 시트에 청크로 저장 (seed 도구와 동일한 방식)
+  const payload = JSON.stringify(list);
+  const chunks = [];
+  for(let i=0; i<payload.length; i+=CHUNK_SIZE) chunks.push(payload.slice(i, i+CHUNK_SIZE));
+  if(chunks.length === 0) chunks.push('[]');
+  const results = await Promise.all(chunks.map((c,i)=>gsSet(employeesChunkKey(i), c)));
+  if(results.some(r=>!r)) throw new Error('employee chunk write failed');
+  const metaRes = await gsSet(EMPLOYEES_META_KEY, JSON.stringify({count: chunks.length}));
+  if(!metaRes) throw new Error('employee meta write failed');
+  return true;
 }
 
 async function loadOneFloor(floor){
@@ -1820,6 +2118,7 @@ async function migrateExecOffices(){
 }
 
 async function addSeat(floor, x, y, name, dept, part, position, ext, duty, vacant){
+  if(isAdmin) snapshotForUndo(floor, `${name||'새'} 좌석 추가`);
   const emp = empByName(name);
   const id = 's' + Date.now() + Math.floor(Math.random()*1000);
   const seat = {
@@ -1839,6 +2138,7 @@ async function addSeat(floor, x, y, name, dept, part, position, ext, duty, vacan
 async function updateSeatFull(floor, id, name, dept, part, position, ext, duty, vacant){
   const seat = seats[floor].find(s=>s.id===id);
   if(!seat) return;
+  if(isAdmin) snapshotForUndo(floor, `${seat.name||'좌석'} 수정`);
   seat.name = name;
   seat.dept = dept || '';
   seat.part = part || '';
@@ -1857,6 +2157,10 @@ async function updateSeatDutyOnly(floor, id, duty){
 }
 
 async function deleteSeat(floor, id){
+  if(isAdmin){
+    const seat = seats[floor].find(s=>s.id===id);
+    snapshotForUndo(floor, `${seat && seat.name ? seat.name+' ' : ''}좌석 삭제`);
+  }
   seats[floor] = seats[floor].filter(s=>s.id!==id);
   await persistFloorSeats(floor);
 }
@@ -1895,34 +2199,403 @@ function findSeatForName(name){
   return findAllSeatsForName(name)[0] || null;
 }
 
+// 해외점포 목록. 인원이 1~5명으로 적어 기본은 "정보형 카드"로 운영하되,
+// 배치도를 받을 예정인 지점(viewType:'floorplan')은 본사(4F/5F/7F)와 동일한
+// 좌석 마커 방식으로 전환한다. 나머지(1인 사무소 등)는 정보형으로 유지.
+// freeSeating:true 인 지점은 자율좌석제라 개인 좌석을 도면에 고정하지 않고,
+// 배치도는 공간 안내용으로만 두면서 인원은 명단 카드로 함께 보여준다.
+// 실제 공개 여부는 관리자가 "공개하기" 버튼을 눌러야만(published:true) 일반 직원에게 노출된다.
+const OVERSEAS_BRANCHES = [
+  { id:'singapore', name:'싱가폴지점',     viewType:'floorplan' },
+  { id:'dubai',     name:'두바이지점',     viewType:'floorplan' },
+  { id:'shanghai',  name:'상해지점',       viewType:'floorplan' },
+  { id:'tokyo',     name:'동경사무소',     viewType:'floorplan' },
+  { id:'london',    name:'런던사무소',     viewType:'floorplan' },
+  { id:'bogota',    name:'보고타사무소',   viewType:'info' },
+  { id:'hongkong',  name:'홍콩중개법인',   viewType:'floorplan' },
+  { id:'swiss',     name:'스위스법인',     viewType:'floorplan', freeSeating:true },
+  { id:'usa',       name:'미국중개법인',   viewType:'floorplan' },
+  { id:'india',     name:'인도지점',       viewType:'info' },
+];
+
+const OVERSEAS_KEY = 'overseasData';
+let OVERSEAS_DATA = {}; // { [branchId]: { address, phone, memo, staff:[{id,name,title,ext,email,memo}], published } }
+
+async function loadOverseasData(){
+  const res = await gsGet(OVERSEAS_KEY);
+  if(res && res.value){
+    try{ OVERSEAS_DATA = JSON.parse(res.value); }catch(e){ OVERSEAS_DATA = {}; }
+  }
+}
+
+async function saveOverseasData(){
+  await gsSet(OVERSEAS_KEY, JSON.stringify(OVERSEAS_DATA));
+}
+
+function branchInfo(id){
+  return OVERSEAS_DATA[id] || {address:'', phone:'', memo:'', staff:[], published:false};
+}
+
+// 자동 판단이 아니라, 관리자가 명시적으로 "공개하기" 버튼을 눌러야 true가 된다.
+function branchIsPublished(id){
+  return !!(OVERSEAS_DATA[id] && OVERSEAS_DATA[id].published);
+}
+
+function allOverseasStaff(){
+  const list = [];
+  for(const b of OVERSEAS_BRANCHES){
+    // 배치도형(자율좌석제 제외) 지점은 인원을 좌석 마커로 관리하므로,
+    // 예전 정보형 카드에 입력했던 명단(OVERSEAS_DATA)은 검색에서 제외한다. (중복 표시 방지)
+    const usesFloorplan = b.viewType==='floorplan' && branchHasFloorplan(b.id) && !b.freeSeating;
+    if(usesFloorplan) continue;
+    const info = OVERSEAS_DATA[b.id];
+    if(!info || !info.staff) continue;
+    if(!isAdmin && !info.published) continue; // 비공개 지점은 일반 직원 검색에서 제외
+    for(const s of info.staff) list.push({...s, branchId:b.id, branchName:b.name});
+  }
+  return list;
+}
+
+// 배치도(좌석 마커) 방식으로 실제 연결된 해외점포인지 - 이미지/좌석 데이터가 이미 세팅된 경우만 true.
+// 아직 배치도를 받지 못한 곳은 viewType이 'floorplan'이어도 임시로 정보형 카드를 계속 사용한다.
+function branchHasFloorplan(id){
+  return !!DATA.floors[id];
+}
+
+function overseasBranchByFloorId(floor){
+  return OVERSEAS_BRANCHES.find(b=>b.id===floor) || null;
+}
+
 function renderTabs(){
   const tabs = document.getElementById('tabs');
   tabs.innerHTML = '';
+
+  // ── 그룹 1: 위치 선택 (국내 층 + 해외점포) ──
   for(const floor of ["7F","5F","4F"]){
     const btn = document.createElement('div');
     btn.className = 'tab' + (floor===currentFloor ? ' active' : '');
-    const assignedCount = seats[floor].filter(s=>s.name).length;
+    // 직원 좌석만 카운트: 이름이 있고, 공석이 아니고, 내선번호(ext)가 있는 좌석
+    const assignedCount = seats[floor].filter(s => s.name && !s.vacant && s.ext).length;
     btn.innerHTML = `${floor}<span class="count">${assignedCount ? assignedCount+'명 배정' : ''}</span>`;
-    btn.onclick = () => { currentFloor = floor; renderAll(); };
+    btn.onclick = () => { currentFloor = floor; clearUndo(); renderAll(); };
     tabs.appendChild(btn);
   }
+
+  // 해외점포 드롭다운: 관리자가 "공개하기" 버튼을 눌러 published:true 로 만든 지점만
+  // 일반 직원에게 노출된다. 관리자는 비공개 지점도 볼 수 있고(회색 표시), 클릭하면
+  // 정보 입력·공개 전환 화면으로 이동한다.
+  const visibleBranches = isAdmin ? OVERSEAS_BRANCHES : OVERSEAS_BRANCHES.filter(b=>branchIsPublished(b.id));
+  if(visibleBranches.length){
+    const wrap = document.createElement('div');
+    wrap.className = 'overseas-wrap';
+    const osBtn = document.createElement('button');
+    osBtn.className = 'overseas-btn';
+    osBtn.textContent = '🌐 해외점포 ▾';
+    const menu = document.createElement('div');
+    menu.className = 'overseas-menu';
+    menu.innerHTML = visibleBranches.map(b=>{
+      const published = branchIsPublished(b.id);
+      const count = (OVERSEAS_DATA[b.id]?.staff||[]).length;
+      const badgeText = isAdmin ? (published ? '공개중' : '비공개') : (count ? count+'명' : '보기');
+      return `<div class="overseas-item ${published?'':'draft'}" data-id="${b.id}">
+        <span>${b.name}</span>
+        <span class="overseas-badge ${published?'ready':''}">${badgeText}</span>
+      </div>`;
+    }).join('');
+    osBtn.onclick = (e)=>{ e.stopPropagation(); menu.classList.toggle('show'); };
+    menu.querySelectorAll('.overseas-item').forEach(item=>{
+      item.onclick = (e)=>{
+        e.stopPropagation();
+        const b = OVERSEAS_BRANCHES.find(x=>x.id===item.dataset.id);
+        if(!b) return;
+        menu.classList.remove('show');
+        if(b.viewType==='floorplan' && branchHasFloorplan(b.id) && !b.freeSeating){
+          currentFloor = b.id;
+          clearUndo();
+          renderAll();
+        } else {
+          openOverseasBranch(b);
+        }
+      };
+    });
+    wrap.appendChild(osBtn);
+    wrap.appendChild(menu);
+    tabs.appendChild(wrap);
+  }
+
+  // ── 그룹 2: 보기 도구 (전체 목록 + 락커) → 오른쪽 정렬 ──
+  const tools = document.createElement('div');
+  tools.className = 'tab-tools';
+
   const {totalLegendItems} = buildLegendData(currentFloor);
   if(totalLegendItems){
     const legendBtn = document.createElement('button');
     legendBtn.className = 'legend-toggle' + (legendOpen ? ' on' : '');
     legendBtn.textContent = legendOpen ? '전체 목록 숨기기' : `🎨 전체 목록 보기 (${totalLegendItems})`;
-    legendBtn.onclick = ()=>{
-      legendOpen = !legendOpen;
-      renderAll();
-    };
-    tabs.appendChild(legendBtn);
+    legendBtn.onclick = ()=>{ legendOpen = !legendOpen; renderAll(); };
+    tools.appendChild(legendBtn);
   }
+
+  // ── 그룹 3: 도움말 (맨 끝) ──
   const helpBtn = document.createElement('button');
   helpBtn.className = 'help-tab-btn';
+  helpBtn.style.marginLeft = '0';
   helpBtn.textContent = '❓ 이용 방법';
   helpBtn.onclick = openHelpModal;
-  tabs.appendChild(helpBtn);
+  tools.appendChild(helpBtn);
+
+  tabs.appendChild(tools);
 }
+
+function openOverseasBranch(branch){
+  renderOverseasBranchView(branch.id, null);
+}
+
+function renderOverseasBranchView(branchId, highlightStaffId){
+  const branch = OVERSEAS_BRANCHES.find(b=>b.id===branchId);
+  if(!branch) return;
+  const info = branchInfo(branchId);
+  const pop = document.getElementById('popover');
+  pop.classList.add('wide');
+
+  // hasFloorplan: 실제 배치도 이미지가 연결된 지점인지
+  // showRoster:   인원 명단 카드를 보여줄지 (배치도가 없거나, 자율좌석제인 경우)
+  const hasFloorplan = branch.viewType==='floorplan' && branchHasFloorplan(branchId);
+  const freeSeating = !!branch.freeSeating;
+  const showRoster = !hasFloorplan || freeSeating;
+
+  const typeLabel = freeSeating
+    ? '배치도형 · 자율좌석제(명단 안내)'
+    : (hasFloorplan ? '배치도형'
+      : (branch.viewType==='floorplan' ? '배치도형 예정(현재는 정보형으로 운영)' : '정보형'));
+
+  const infoRows = [];
+  if(info.address) infoRows.push(`<div class="bi-row"><span class="bi-label">주소</span><span>${escapeHtml(info.address)}</span></div>`);
+  if(info.phone) infoRows.push(`<div class="bi-row"><span class="bi-label">전화</span><span>${escapeHtml(info.phone)}</span></div>`);
+  if(info.memo) infoRows.push(`<div class="bi-row"><span class="bi-label">비고</span><span style="white-space:pre-wrap;">${escapeHtml(info.memo)}</span></div>`);
+
+  const staffList = info.staff || [];
+  const staffHtml = staffList.length ? staffList.map(s=>`
+    <div class="staff-card" data-sid="${s.id}">
+      <div>
+        <div class="sc-name">${escapeHtml(s.name||'(이름 미입력)')}</div>
+        <div class="sc-meta">${[s.title, s.ext, s.email].filter(Boolean).map(escapeHtml).join(' · ')}</div>
+        ${s.memo ? `<div class="sc-meta">${escapeHtml(s.memo)}</div>` : ''}
+      </div>
+      ${isAdmin ? `<div class="sc-actions">
+        <button type="button" class="staffEditBtn" data-sid="${s.id}" title="수정">✏️</button>
+        <button type="button" class="staffDelBtn" data-sid="${s.id}" title="삭제">🗑️</button>
+      </div>` : ''}
+    </div>
+  `).join('') : `<div class="branch-empty">등록된 인원이 없습니다${isAdmin ? '. 아래 버튼으로 추가해 주세요' : ''}</div>`;
+
+  pop.innerHTML = `
+    <h3>🌐 ${branch.name}</h3>
+    <div class="pos-id">해외점포 · ${typeLabel}${isAdmin ? ' · 관리자 모드' : ''}</div>
+    ${isAdmin ? `<div class="pos-id" style="margin-top:-6px;">공개 상태: <b style="color:${info.published?'var(--accent)':'var(--warn)'};">${info.published ? '전 직원에게 공개중' : '비공개 (관리자만 볼 수 있음)'}</b></div>` : ''}
+    ${infoRows.length ? `<div class="branch-info-box">${infoRows.join('')}</div>` : (isAdmin ? `<div class="branch-info-box"><span style="color:var(--gray);">등록된 사무소 정보가 없습니다</span></div>` : '')}
+    ${freeSeating ? `<div class="branch-info-box" style="background:var(--accent-soft);border-color:var(--accent);"><span style="color:var(--accent);">🪑 이 사무소는 <b>자율좌석제</b>로 운영됩니다. 지정된 좌석이 없으니, 배치도는 공간 안내용으로 참고하시고 근무 인원은 아래 명단을 확인해 주세요.</span></div>` : ''}
+    ${isAdmin ? `<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+      <button type="button" class="legend-toggle" id="editBranchInfoBtn" style="margin:0;">✏️ 사무소 정보 수정</button>
+      <button type="button" class="legend-toggle" id="togglePublishBtn" style="margin:0;">${info.published ? '🔒 비공개로 전환' : '🔓 전 직원에게 공개'}</button>
+      ${hasFloorplan ? `<button type="button" class="legend-toggle" id="gotoFloorBtn" style="margin:0;">🗺️ 배치도 보기</button>` : ''}
+    </div>` : (hasFloorplan ? `<div style="margin-bottom:10px;"><button type="button" class="legend-toggle" id="gotoFloorBtn" style="margin:0;">🗺️ 배치도 보기</button></div>` : '')}
+    ${showRoster ? `
+    <label style="margin-top:0;">근무 인원 (${staffList.length}명)</label>
+    <div id="staffListBox">${staffHtml}</div>
+    ${isAdmin ? `<button type="button" class="legend-toggle" id="addStaffBtn" style="margin-top:8px;margin-left:0;">+ 직원 추가</button>` : ''}
+    ` : (isAdmin && staffList.length ? `
+    <div class="branch-info-box" style="background:#fff6e9;border-color:#e0b366;">
+      <span style="color:#9a6f2e;">⚠️ 이 지점은 배치도형으로 전환되어 인원을 <b>좌석</b>으로 관리합니다. 배치도 전환 전에 입력했던 옛 명단 <b>${staffList.length}명</b>이 남아 있습니다. 검색에는 이미 표시되지 않지만, 데이터를 완전히 정리하려면 아래 버튼을 눌러주세요.</span>
+      <div style="margin-top:8px;"><button type="button" class="legend-toggle" id="clearOldRosterBtn" style="margin:0;">🧹 이전 명단 ${staffList.length}명 정리</button></div>
+    </div>
+    ` : '')}
+    <div class="popover-actions">
+      <button class="btn btn-close" id="branchCloseBtn" style="flex:1;">닫기</button>
+    </div>
+  `;
+  pop.classList.add('show');
+  document.getElementById('overlayBg').classList.add('show');
+  pop.style.left = Math.max(10, window.innerWidth/2 - 210) + 'px';
+  pop.style.top = '40px';
+
+  document.getElementById('branchCloseBtn').onclick = ()=>{ pop.classList.remove('wide'); closePopover(); };
+
+  // 배치도 보기 버튼: 관리자·일반 직원 모두 사용 가능
+  if(hasFloorplan){
+    const gotoBtn = document.getElementById('gotoFloorBtn');
+    if(gotoBtn) gotoBtn.onclick = ()=>{
+      pop.classList.remove('wide');
+      closePopover();
+      currentFloor = branchId;
+      clearUndo();
+      renderAll();
+    };
+  }
+
+  if(isAdmin){
+    document.getElementById('editBranchInfoBtn').onclick = ()=> renderBranchInfoForm(branchId);
+    document.getElementById('togglePublishBtn').onclick = async ()=>{
+      const d = branchInfo(branchId);
+      d.published = !d.published;
+      OVERSEAS_DATA[branchId] = d;
+      await saveOverseasData();
+      renderOverseasBranchView(branchId);
+      renderTabs();
+      showToast(d.published ? `${branch.name}을(를) 전 직원에게 공개했어요` : `${branch.name}을(를) 비공개로 전환했어요`);
+    };
+    if(showRoster){
+      document.getElementById('addStaffBtn').onclick = ()=> renderStaffForm(branchId, null);
+    }
+    const clearOldBtn = document.getElementById('clearOldRosterBtn');
+    if(clearOldBtn){
+      clearOldBtn.onclick = ()=>{
+        const cnt = staffList.length;
+        closePopover();
+        openConfirmPopover(`${branch.name}의 이전 명단 ${cnt}명을 완전히 삭제할까요? (배치도 좌석은 영향 없음)`, async ()=>{
+          const d = branchInfo(branchId);
+          d.staff = [];
+          OVERSEAS_DATA[branchId] = d;
+          await saveOverseasData();
+          renderTabs();
+          showToast('이전 명단을 정리했어요');
+        });
+      };
+    }
+    pop.querySelectorAll('.staffEditBtn').forEach(btn=>{
+      btn.onclick = ()=> renderStaffForm(branchId, btn.dataset.sid);
+    });
+    pop.querySelectorAll('.staffDelBtn').forEach(btn=>{
+      btn.onclick = ()=>{
+        const sid = btn.dataset.sid;
+        const target = staffList.find(s=>s.id===sid);
+        openConfirmPopover(`${target?target.name:'이 직원'}을(를) 삭제할까요?`, async ()=>{
+          const d = branchInfo(branchId);
+          d.staff = (d.staff||[]).filter(s=>s.id!==sid);
+          OVERSEAS_DATA[branchId] = d;
+          await saveOverseasData();
+          renderOverseasBranchView(branchId);
+          renderTabs();
+          showToast('삭제했어요');
+        });
+      };
+    });
+  }
+
+  if(highlightStaffId){
+    const card = pop.querySelector(`.staff-card[data-sid="${highlightStaffId}"]`);
+    if(card){ card.classList.add('hl'); card.scrollIntoView({block:'center'}); }
+  }
+}
+
+function renderBranchInfoForm(branchId){
+  const branch = OVERSEAS_BRANCHES.find(b=>b.id===branchId);
+  const info = branchInfo(branchId);
+  const pop = document.getElementById('popover');
+  pop.classList.add('wide');
+  pop.innerHTML = `
+    <h3>🌐 ${branch.name} · 정보 수정</h3>
+    <label>주소</label>
+    <input type="text" id="biAddress" value="${escapeHtml(info.address||'')}" placeholder="예: 상해시 ○○구 ○○로 ...">
+    <label>전화번호</label>
+    <input type="text" id="biPhone" value="${escapeHtml(info.phone||'')}" placeholder="예: +86-21-1234-5678">
+    <label>비고</label>
+    <textarea id="biMemo" rows="3" placeholder="근무시간, 시차, 주재원 안내 등 자유롭게 입력하세요">${escapeHtml(info.memo||'')}</textarea>
+    <div class="popover-actions">
+      <button class="btn btn-close" id="biCancelBtn">취소</button>
+      <button class="btn btn-save" id="biSaveBtn">저장</button>
+    </div>
+  `;
+  pop.classList.add('show');
+  document.getElementById('overlayBg').classList.add('show');
+
+  document.getElementById('biCancelBtn').onclick = ()=> renderOverseasBranchView(branchId);
+  document.getElementById('biSaveBtn').onclick = async ()=>{
+    const d = branchInfo(branchId);
+    d.address = document.getElementById('biAddress').value.trim();
+    d.phone = document.getElementById('biPhone').value.trim();
+    d.memo = document.getElementById('biMemo').value.trim();
+    OVERSEAS_DATA[branchId] = d;
+    await saveOverseasData();
+    renderOverseasBranchView(branchId);
+    renderTabs();
+    showToast('사무소 정보를 저장했어요');
+  };
+}
+
+function renderStaffForm(branchId, staffId){
+  const branch = OVERSEAS_BRANCHES.find(b=>b.id===branchId);
+  const info = branchInfo(branchId);
+  const existing = staffId ? (info.staff||[]).find(s=>s.id===staffId) : null;
+  const pop = document.getElementById('popover');
+  pop.classList.add('wide');
+  pop.innerHTML = `
+    <h3>🌐 ${branch.name} · ${existing?'직원 정보 수정':'직원 추가'}</h3>
+    <label>이름</label>
+    <input type="text" id="sfName" value="${escapeHtml(existing?existing.name||'':'')}" placeholder="이름 입력 또는 검색" autocomplete="off">
+    <div class="autolist" id="sfNameAutolist"></div>
+    <label>직급/직책</label>
+    <input type="text" id="sfTitle" value="${escapeHtml(existing?existing.title||'':'')}" placeholder="예: 지점장, 주재원">
+    <label>연락처 (내선/휴대폰)</label>
+    <input type="text" id="sfExt" value="${escapeHtml(existing?existing.ext||'':'')}" placeholder="예: +86-21-... 또는 010-...">
+    <label>이메일</label>
+    <input type="text" id="sfEmail" value="${escapeHtml(existing?existing.email||'':'')}" placeholder="예: name@koreanre.co.kr">
+    <label>비고</label>
+    <textarea id="sfMemo" rows="2" placeholder="담당업무 등">${escapeHtml(existing?existing.memo||'':'')}</textarea>
+    <div class="popover-actions">
+      ${existing ? `<button class="btn btn-clear" id="sfDeleteBtn">삭제</button>` : ''}
+      <button class="btn btn-save" id="sfSaveBtn">저장</button>
+    </div>
+    <div class="popover-actions">
+      <button class="btn btn-close" id="sfCancelBtn" style="flex:1;">취소</button>
+    </div>
+  `;
+  pop.classList.add('show');
+  document.getElementById('overlayBg').classList.add('show');
+
+  setupStaffNameAutocomplete('sfName', 'sfNameAutolist', 'sfTitle', 'sfExt');
+
+  document.getElementById('sfCancelBtn').onclick = ()=> renderOverseasBranchView(branchId);
+  document.getElementById('sfSaveBtn').onclick = async ()=>{
+    const name = document.getElementById('sfName').value.trim();
+    if(!name){ showToast('이름을 입력해 주세요'); return; }
+    const d = branchInfo(branchId);
+    d.staff = d.staff || [];
+    const rec = {
+      id: existing ? existing.id : ('staff_'+Date.now()+'_'+Math.floor(Math.random()*1000)),
+      name,
+      title: document.getElementById('sfTitle').value.trim(),
+      ext: document.getElementById('sfExt').value.trim(),
+      email: document.getElementById('sfEmail').value.trim(),
+      memo: document.getElementById('sfMemo').value.trim(),
+    };
+    if(existing){
+      const idx = d.staff.findIndex(s=>s.id===existing.id);
+      d.staff[idx] = rec;
+    } else {
+      d.staff.push(rec);
+    }
+    OVERSEAS_DATA[branchId] = d;
+    await saveOverseasData();
+    renderOverseasBranchView(branchId);
+    renderTabs();
+    showToast(existing ? '수정했어요' : '추가했어요');
+  };
+  if(existing){
+    document.getElementById('sfDeleteBtn').onclick = ()=>{
+      openConfirmPopover(`${existing.name}님을 삭제할까요?`, async ()=>{
+        const d2 = branchInfo(branchId);
+        d2.staff = (d2.staff||[]).filter(s=>s.id!==existing.id);
+        OVERSEAS_DATA[branchId] = d2;
+        await saveOverseasData();
+        renderOverseasBranchView(branchId);
+        renderTabs();
+        showToast('삭제했어요');
+      });
+    };
+  }
+}
+
 
 function deptShort(s){ return s ? s.replace(/\(.*?\)/,'') : ''; }
 
@@ -1962,12 +2635,106 @@ let legendOpen = false;
 let legendCustomOrder = {}; // `${floor}:${cat}` -> array of item values, admin-defined drag order
 
 const LEGEND_ORDER_KEY = 'legendOrderAll';
+const LOCKER_POS_KEY = 'lockerPositions'; // {lockerId: {x,y}} - 관리자가 드래그로 옮긴 위치
+let lockerPosOverride = {};
+
+// 락커 정보(팀·구역·번호·개수) 수정/삭제/추가 내용. 구글 시트에 저장.
+const LOCKER_DATA_KEY = 'lockerData';
+let lockerDataOverride = { edits:{}, deleted:[], added:[] };
+
+async function loadLockerPositions(){
+  try{
+    const res = await gsGet(LOCKER_POS_KEY);
+    if(res && res.value) lockerPosOverride = JSON.parse(res.value);
+  }catch(e){ /* 저장된 위치 없음 - 기본 위치 사용 */ }
+  rebuildLockers();
+}
+
+async function loadLockerData(){
+  try{
+    const res = await gsGet(LOCKER_DATA_KEY);
+    if(res && res.value){
+      const p = JSON.parse(res.value);
+      lockerDataOverride = { edits:p.edits||{}, deleted:p.deleted||[], added:p.added||[] };
+    }
+  }catch(e){ /* 저장된 수정내역 없음 */ }
+  rebuildLockers();
+}
+
+async function saveLockerData(){
+  try{
+    await gsSet(LOCKER_DATA_KEY, JSON.stringify(lockerDataOverride));
+    return true;
+  }catch(e){
+    console.warn('failed to save locker data', e);
+    showToast('락커 정보 저장 중 오류가 발생했어요');
+    return false;
+  }
+}
+
+// 기본값 + 수정/삭제/추가 + 위치 override 를 모두 반영해 최종 LOCKERS 배열을 만든다.
+function rebuildLockers(){
+  let list = JSON.parse(JSON.stringify(DEFAULT_LOCKERS));
+  // 삭제 반영
+  list = list.filter(lk => !lockerDataOverride.deleted.includes(lk.id));
+  // 필드 수정 반영
+  list = list.map(lk => {
+    const e = lockerDataOverride.edits[lk.id];
+    return e ? {...lk, ...e} : lk;
+  });
+  // 추가된 락커 반영
+  for(const a of lockerDataOverride.added){ list.push(JSON.parse(JSON.stringify(a))); }
+  // 위치 override 반영
+  for(const lk of list){
+    const ov = lockerPosOverride[lk.id];
+    if(ov && typeof ov.x === 'number' && typeof ov.y === 'number'){
+      lk.x = ov.x; lk.y = ov.y;
+    }
+  }
+  LOCKERS = list;
+}
+
+async function saveLockerPosition(lockerId, x, y){
+  lockerPosOverride[lockerId] = {x: Math.round(x*10)/10, y: Math.round(y*10)/10};
+  try{
+    await gsSet(LOCKER_POS_KEY, JSON.stringify(lockerPosOverride));
+    return true;
+  }catch(e){
+    console.warn('failed to save locker position', e);
+    showToast('락커 위치 저장 중 오류가 발생했어요');
+    return false;
+  }
+}
 
 async function loadAllLegendOrders(){
   try{
     const res = await gsGet(LEGEND_ORDER_KEY);
     if(res && res.value) legendCustomOrder = JSON.parse(res.value);
   }catch(e){ /* no custom orders saved yet */ }
+}
+
+// 관리자가 항목을 다른 카테고리로 드래그해 옮긴 것을 저장. 자동 분류보다 우선한다.
+let legendCategoryOverride = {}; // `${floor}:${value}` -> 'Team'|'Meeting Room'|'Space'|'Facility'
+const LEGEND_CAT_KEY = 'legendCategoryAll';
+const LEGEND_CATEGORIES = ['Team', 'Meeting Room', 'Space', 'Facility'];
+const LEGEND_CAT_KO = {'Team':'팀', 'Meeting Room':'회의실', 'Space':'공간', 'Facility':'시설'};
+
+async function loadLegendCategoryOverrides(){
+  try{
+    const res = await gsGet(LEGEND_CAT_KEY);
+    if(res && res.value) legendCategoryOverride = JSON.parse(res.value);
+  }catch(e){ /* no overrides saved yet */ }
+}
+
+async function saveLegendCategoryOverride(floor, value, cat){
+  legendCategoryOverride[`${floor}:${value}`] = cat;
+  try{ await gsSet(LEGEND_CAT_KEY, JSON.stringify(legendCategoryOverride)); }
+  catch(e){ console.warn('failed to save legend category override', e); }
+}
+
+function getLegendCategoryOverride(floor, value){
+  const c = legendCategoryOverride[`${floor}:${value}`];
+  return (c && LEGEND_CATEGORIES.includes(c)) ? c : null;
 }
 
 async function saveLegendOrder(floor, cat, orderArr){
@@ -2010,11 +2777,11 @@ function buildLegendData(floor){
   }
   for(const d of sortedDepts){
     if(isOutsourced(d)) continue; // outsourced seats stay out of this list entirely
-    const cat = categorizeLegendItem(d, 'team');
+    const cat = getLegendCategoryOverride(floor, d) || categorizeLegendItem(d, 'team');
     grouped[cat].push({value:d, kind:'team', cat});
   }
   for(const r of sortedRoomLabels){
-    const cat = categorizeLegendItem(r, 'room');
+    const cat = getLegendCategoryOverride(floor, r) || categorizeLegendItem(r, 'room');
     grouped[cat].push({value:r, kind:'room', cat});
   }
   const spacePriorityByFloor = {
@@ -2044,12 +2811,14 @@ function buildLegendData(floor){
     grouped[cat] = applyCustomLegendOrder(floor, cat, grouped[cat]);
   }
 
-  const legendHtml = categoryOrder.filter(cat=>grouped[cat] && grouped[cat].length).map(cat=>{
+  const catsToShow = isAdmin ? categoryOrder : categoryOrder.filter(cat=>grouped[cat] && grouped[cat].length);
+  const legendHtml = catsToShow.map(cat=>{
     const items = grouped[cat].map(({value, kind, cat: itemCat}, idx)=>
       `<span class="legend-team ${isAdmin?'draggable':''}" draggable="${isAdmin?'true':'false'}" data-value="${value}" data-kind="${kind}" data-floor="${floor}" data-cat="${cat}" data-idx="${idx}"><span class="dot" style="background:${dotColorForCategory(itemCat, value)}"></span>${value}</span>`
     ).join('');
     const catClass = 'cat-' + cat.toLowerCase().replace(/\s+/g,'-');
-    return `<div class="legend-category ${catClass}"><span class="legend-cat-label">${cat}</span><div class="legend-cat-items" data-floor="${floor}" data-cat="${cat}">${items}</div></div>`;
+    const emptyHint = (isAdmin && !grouped[cat].length) ? `<span class="legend-empty-hint">여기로 끌어다 놓기</span>` : '';
+    return `<div class="legend-category ${catClass} ${grouped[cat].length?'':'is-empty'}"><span class="legend-cat-label">${cat}</span><div class="legend-cat-items" data-floor="${floor}" data-cat="${cat}">${items}${emptyHint}</div></div>`;
   }).join('');
 
   const totalLegendItems = Object.values(grouped).reduce((sum,arr)=>sum+arr.length,0);
@@ -2099,17 +2868,35 @@ function renderFloor(floor){
       <div class="zone-anchor-label" style="left:${a.x}%;top:${a.y}%;">${a.label}</div>`;
   }
 
-  const selCount = sel.size;
+  // 락커 마커 (다른 시설물처럼 항상 표시, 라벨은 마우스 올렸을 때만)
+  for(const lk of LOCKERS.filter(l=>l.floor===floor)){
+    const isHi = hiIds.includes(lk.id);
+    markers += `<div class="marker-wrap ${isHi&&showHiLabels?'show-label':''}" style="position:absolute;left:${lk.x}%;top:${lk.y}%;">
+      ${isHi && showHiLabels ? `<div class="seat-highlight-ring" style="left:0;top:0;"></div>` : ''}
+      <div class="marker locker ${isHi?'highlight':''} ${isAdmin?'locker-draggable':''}" data-floor="${floor}" data-id="${lk.id}" data-type="locker"></div>
+      <div class="marker-label">🔑 ${lk.team} · ${lk.zone} ${lk.range}</div>
+    </div>`;
+  }
 
-  return `<div class="floor-view ${floor===currentFloor?'active':''}" data-floor="${floor}">
+  const selCount = sel.size;
+  const overseasBranch = overseasBranchByFloorId(floor);
+  const isFreeSeating = overseasBranch && overseasBranch.freeSeating;
+  const branchPublished = overseasBranch && branchIsPublished(overseasBranch.id);
+
+  return `<div class="floor-view ${floor===currentFloor?'active':''} ${overseasBranch?'overseas-floor':''}" data-floor="${floor}">
     <div class="floor-toolbar">
+      ${overseasBranch ? `<span class="add-hint" style="font-weight:700;color:var(--ink);">🌐 ${overseasBranch.name} 배치도${isFreeSeating ? ' · 🪑 자율좌석제' : ''}</span>
+      <button class="branch-info-toggle" data-floor="${floor}" id="branchInfoFromFloorBtn-${floor}">${isFreeSeating ? '인원 명단 · 사무소 정보' : '사무소 정보'}</button>
+      ${isAdmin ? `<span class="branch-pub-badge ${branchPublished?'on':''}">${branchPublished ? '● 전 직원 공개중' : '● 비공개'}</span>
+      <button class="branch-pub-toggle ${branchPublished?'on':''}" data-floor="${floor}" id="branchPubToggle-${floor}">${branchPublished ? '🔒 비공개로 전환' : '🔓 전 직원에게 공개'}</button>` : ''}` : ''}
       ${isAdmin ? `<button class="add-toggle ${addMode[floor]?'on':''}" data-floor="${floor}" id="addToggle-${floor}">
-        ${addMode[floor] ? '좌석 추가 중 · 그림을 클릭하세요' : '+ 좌석 추가'}
+        ${addMode[floor] ? '추가 중 · 그림을 클릭하세요' : (isFreeSeating ? '+ 시설물 추가' : '+ 좌석 추가')}
       </button>
       <button class="add-toggle align-toggle ${alignMode[floor]?'on':''}" data-floor="${floor}" id="alignToggle-${floor}">
         ${alignMode[floor] ? '정렬 모드 · 좌석을 클릭해 선택' : '↕ 정렬 모드'}
-      </button>` : ''}
-      <span class="add-hint">${isAdmin ? (addMode[floor] ? '책상+의자 그림 위를 클릭하면 이름을 입력할 수 있어요' : (alignMode[floor] ? `${selCount}개 선택됨 · 같은 줄/열의 좌석들을 클릭해서 선택하세요` : '실제 책상이 있는 자리를 클릭해서 이름을 배정하세요')) : ''}</span>
+      </button>
+      ${!overseasBranch ? `<button class="add-toggle locker-add-btn ${lockerAddMode[floor]?'on':''}" data-floor="${floor}" id="lockerAddBtn-${floor}">${lockerAddMode[floor] ? '락커 추가 중 · 그림을 클릭하세요' : '+ 락커 추가'}</button>` : ''}` : ''}
+      <span class="add-hint">${isAdmin ? (lockerAddMode[floor] ? '락커를 놓을 위치를 클릭하면 팀·번호를 입력할 수 있어요' : (addMode[floor] ? (isFreeSeating ? '회의실·화장실·자율좌석 구역 등 공간을 클릭해서 추가하세요 (개인 좌석은 명단으로 관리)' : '책상+의자 그림 위를 클릭하면 이름을 입력할 수 있어요') : (alignMode[floor] ? `${selCount}개 선택됨 · 같은 줄/열의 좌석들을 클릭해서 선택하세요` : (isFreeSeating ? '자율좌석제 지점입니다. 도면 위에는 회의실·화장실 등 공간만 표시하세요. 근무 인원은 「인원 명단」 버튼에서 관리합니다.' : '실제 책상이 있는 자리를 클릭해서 이름을 배정하세요')))) : (isFreeSeating ? '🪑 자율좌석제 사무소입니다. 지정석이 없으니 「인원 명단」에서 근무 인원을 확인하세요.' : '')}</span>
     </div>
     ${(()=>{ const {legendHtml, totalLegendItems} = buildLegendData(floor); return legendOpen && totalLegendItems ? `<div class="team-legend"><div class="team-legend-card">${legendHtml}</div></div>` : ''; })()}
     ${alignMode[floor] && selCount >= 2 ? `
@@ -2122,7 +2909,7 @@ function renderFloor(floor){
       <button class="align-btn clear" data-action="clear" data-floor="${floor}">선택 해제</button>
     </div>` : ''}
     <div class="plan-wrap">
-      <div class="plan-inner ${addMode[floor]?'add-mode':''}" data-floor="${floor}">
+      <div class="plan-inner ${(addMode[floor]||lockerAddMode[floor])?'add-mode':''}" data-floor="${floor}">
         <img src="${FLOOR_IMAGES[floor]}" alt="${floor} 배치도" draggable="false" loading="${floor===currentFloor?'eager':'lazy'}">
         ${markers}
       </div>
@@ -2146,7 +2933,9 @@ function renderAll(){
   }
   const main = document.getElementById('main');
   try{
-    main.innerHTML = ["7F","5F","4F"].map(floor=>{
+    const domesticFloors = ["7F","5F","4F"];
+    const extraFloors = Object.keys(DATA.floors).filter(f=>!domesticFloors.includes(f));
+    main.innerHTML = domesticFloors.concat(extraFloors).map(floor=>{
       try{
         return renderFloor(floor);
       }catch(e){
@@ -2164,8 +2953,8 @@ function renderAll(){
   attachPlanClickEvents();
   attachAddToggleEvents();
   attachLegendTeamEvents();
-  const totalAssigned = Object.values(seats).reduce((sum,arr)=>sum+arr.filter(s=>s.name).length,0);
-  document.getElementById('footerRight').textContent = `전체 ${DATA.employees.length}명 등록 · ${totalAssigned}개 좌석 배정 완료`;
+  const totalAssigned = Object.values(seats).reduce((sum,arr)=>sum+arr.filter(s=>s.name && !s.vacant && s.ext).length,0);
+  document.getElementById('footerRight').textContent = `전체 ${DATA.employees.length}명 등록 · ${totalAssigned}명 배정 완료`;
 }
 
 let draggedLegendItem = null; // {el, floor, cat}
@@ -2195,7 +2984,7 @@ function attachLegendTeamEvents(){
   document.querySelectorAll('.legend-cat-items').forEach(container=>{
     container.addEventListener('dragover', (e)=>{
       if(!draggedLegendItem) return;
-      if(draggedLegendItem.floor !== container.dataset.floor || draggedLegendItem.cat !== container.dataset.cat) return;
+      if(draggedLegendItem.floor !== container.dataset.floor) return; // 같은 층 안에서만 이동
       e.preventDefault();
       container.classList.add('drag-over');
       const target = e.target.closest('.legend-team');
@@ -2203,6 +2992,11 @@ function attachLegendTeamEvents(){
         const rect = target.getBoundingClientRect();
         const before = (e.clientX - rect.left) < rect.width/2;
         container.insertBefore(draggedLegendItem.el, before ? target : target.nextSibling);
+      } else if(!target){
+        // 빈 영역(빈 카테고리 포함)에 놓을 때: 안내문구 앞에 추가
+        const hint = container.querySelector('.legend-empty-hint');
+        if(hint) container.insertBefore(draggedLegendItem.el, hint);
+        else if(!container.contains(draggedLegendItem.el)) container.appendChild(draggedLegendItem.el);
       }
     });
     container.addEventListener('dragleave', (e)=>{
@@ -2212,11 +3006,22 @@ function attachLegendTeamEvents(){
       e.preventDefault();
       container.classList.remove('drag-over');
       if(!draggedLegendItem) return;
-      const {floor, cat} = draggedLegendItem;
+      const {floor} = draggedLegendItem;
+      const sourceCat = draggedLegendItem.cat;
+      const targetCat = container.dataset.cat;
+      const value = draggedLegendItem.el.dataset.value;
       draggedLegendItem.el.dataset.dragMoved = '1';
+
+      // 카테고리가 바뀌었으면 override 저장 (자동 분류보다 우선)
+      if(sourceCat !== targetCat){
+        await saveLegendCategoryOverride(floor, value, targetCat);
+      }
+      // 옮겨진 카테고리 안에서의 순서 저장
       const newOrder = [...container.querySelectorAll('.legend-team')].map(el=>el.dataset.value);
-      await saveLegendOrder(floor, cat, newOrder);
-      showToast('순서를 저장했어요');
+      await saveLegendOrder(floor, targetCat, newOrder);
+      showToast(sourceCat !== targetCat
+        ? `"${value}"을(를) ${LEGEND_CAT_KO[targetCat]||targetCat}(으)로 옮겼어요`
+        : '순서를 저장했어요');
       renderAll();
     });
   });
@@ -2285,12 +3090,43 @@ function goToTeamColor(dept, scopeFloor){
 }
 
 function attachAddToggleEvents(){
-  document.querySelectorAll('.add-toggle:not(.align-toggle)').forEach(btn=>{
+  document.querySelectorAll('.branch-info-toggle').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      renderOverseasBranchView(btn.dataset.floor);
+    };
+  });
+  document.querySelectorAll('.branch-pub-toggle').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      e.stopPropagation();
+      const branchId = btn.dataset.floor;
+      const branch = OVERSEAS_BRANCHES.find(b=>b.id===branchId);
+      const d = branchInfo(branchId);
+      d.published = !d.published;
+      OVERSEAS_DATA[branchId] = d;
+      await saveOverseasData();
+      renderAll();
+      renderTabs();
+      showToast(d.published
+        ? `${branch?branch.name:'이 지점'}을(를) 전 직원에게 공개했어요`
+        : `${branch?branch.name:'이 지점'}을(를) 비공개로 전환했어요`);
+    };
+  });
+  document.querySelectorAll('.locker-add-btn').forEach(btn=>{
+    btn.onclick = (e)=>{
+      e.stopPropagation();
+      const floor = btn.dataset.floor;
+      lockerAddMode[floor] = !lockerAddMode[floor];
+      if(lockerAddMode[floor]){ addMode[floor] = false; alignMode[floor] = false; selectedSeats[floor].clear(); }
+      renderAll();
+    };
+  });
+  document.querySelectorAll('.add-toggle:not(.align-toggle):not(.locker-add-btn)').forEach(btn=>{
     btn.onclick = (e)=>{
       e.stopPropagation();
       const floor = btn.dataset.floor;
       addMode[floor] = !addMode[floor];
-      if(addMode[floor]){ alignMode[floor] = false; selectedSeats[floor].clear(); }
+      if(addMode[floor]){ alignMode[floor] = false; lockerAddMode[floor] = false; selectedSeats[floor].clear(); }
       renderAll();
     };
   });
@@ -2299,7 +3135,7 @@ function attachAddToggleEvents(){
       e.stopPropagation();
       const floor = btn.dataset.floor;
       alignMode[floor] = !alignMode[floor];
-      if(alignMode[floor]){ addMode[floor] = false; } else { selectedSeats[floor].clear(); }
+      if(alignMode[floor]){ addMode[floor] = false; lockerAddMode[floor] = false; } else { selectedSeats[floor].clear(); }
       renderAll();
     };
   });
@@ -2322,6 +3158,8 @@ async function applyAlign(floor, action){
   const ids = [...selectedSeats[floor]];
   const targets = seats[floor].filter(s=>ids.includes(s.id));
   if(targets.length < 2) return;
+
+  if(isAdmin) snapshotForUndo(floor, `좌석 ${targets.length}개 정렬`);
 
   if(action === 'h'){
     const avgY = targets.reduce((sum,s)=>sum+s.y,0) / targets.length;
@@ -2351,20 +3189,32 @@ function attachPlanClickEvents(){
     plan.addEventListener('click', (e)=>{
       if(e.target.closest('.marker')) return; // handled by marker click
       const floor = plan.dataset.floor;
-      if(!isAdmin || !addMode[floor]) return;
+      if(!isAdmin) return;
       const rect = plan.getBoundingClientRect();
       const xPct = ((e.clientX - rect.left) / rect.width) * 100;
       const yPct = ((e.clientY - rect.top) / rect.height) * 100;
-      openNewSeatPopover(floor, xPct, yPct, e.clientX, e.clientY);
+      if(lockerAddMode[floor]){
+        openNewLockerPopover(floor, xPct, yPct, e.clientX, e.clientY);
+      } else if(addMode[floor]){
+        openNewSeatPopover(floor, xPct, yPct, e.clientX, e.clientY);
+      }
     });
   });
 }
 
 function attachMarkerEvents(){
   document.querySelectorAll('.marker').forEach(m => {
+    const type = m.dataset.type;
+
+    // 관리자 모드에서 락커 마커는 드래그로 위치 이동 가능
+    if(type === 'locker' && isAdmin){
+      enableLockerDrag(m);
+    }
+
     m.addEventListener('click', (e) => {
       e.stopPropagation();
       const floor = m.dataset.floor, id = m.dataset.id, type = m.dataset.type;
+      if(m.dataset.wasDragged){ delete m.dataset.wasDragged; return; } // 드래그 직후 클릭 무시
       if(type === 'seat'){
         if(isAdmin && alignMode[floor]){
           const sel = selectedSeats[floor];
@@ -2375,8 +3225,266 @@ function attachMarkerEvents(){
         }
       }
       else if(type === 'zone') openZonePopover(floor, id, m);
+      else if(type === 'locker'){
+        // 관리자: 마커의 mousedown/tap(enableLockerDrag의 onUp)에서 편집창을 연다.
+        // 일반 직원: 여기서 보기 팝오버를 연다.
+        if(!isAdmin) openLockerPopover(floor, id, m);
+      }
     });
   });
+}
+
+function enableLockerDrag(marker){
+  marker.addEventListener('mousedown', startDrag);
+  marker.addEventListener('touchstart', startDrag, {passive:false});
+
+  function startDrag(e){
+    e.preventDefault();
+    e.stopPropagation();
+    const id = marker.dataset.id;
+    const planInner = marker.closest('.plan-inner');
+    if(!planInner) return;
+    let moved = false;
+    const startPoint = e.touches ? e.touches[0] : e;
+    const startX = startPoint.clientX, startY = startPoint.clientY;
+    const DRAG_THRESHOLD = 5; // px - 이보다 적게 움직이면 클릭으로 간주(편집창 열림)
+
+    function onMove(ev){
+      const point = ev.touches ? ev.touches[0] : ev;
+      // 임계값을 넘기 전까지는 드래그로 취급하지 않음 (클릭과 구분)
+      if(!moved){
+        const dist = Math.hypot(point.clientX - startX, point.clientY - startY);
+        if(dist < DRAG_THRESHOLD) return;
+      }
+      const rect = planInner.getBoundingClientRect();
+      let xPct = (point.clientX - rect.left) / rect.width * 100;
+      let yPct = (point.clientY - rect.top) / rect.height * 100;
+      xPct = Math.max(0, Math.min(100, xPct));
+      yPct = Math.max(0, Math.min(100, yPct));
+      moved = true;
+      marker.classList.add('dragging');
+      const wrap = marker.closest('.marker-wrap');
+      if(wrap){ wrap.style.left = xPct + '%'; wrap.style.top = yPct + '%'; }
+      marker.dataset.dragX = xPct;
+      marker.dataset.dragY = yPct;
+    }
+
+    async function onUp(){
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      marker.classList.remove('dragging');
+      if(moved){
+        marker.dataset.wasDragged = '1';
+        const x = parseFloat(marker.dataset.dragX), y = parseFloat(marker.dataset.dragY);
+        const lk = LOCKERS.find(l=>l.id===id);
+        if(lk){ lk.x = x; lk.y = y; }
+        const ok = await saveLockerPosition(id, x, y);
+        if(ok) showToast('락커 위치를 저장했어요');
+      } else {
+        // 움직이지 않았으면 클릭(탭)으로 간주 → 편집창 열기 (좌석 클릭과 동일)
+        openLockerEditor(marker.dataset.id, marker);
+      }
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, {passive:false});
+    document.addEventListener('touchend', onUp);
+  }
+}
+
+function openLockerPopover(floor, id, anchorEl){
+  const lk = LOCKERS.find(l=>l.id===id);
+  if(!lk) return;
+  closeAllPopovers();
+  const overlay = document.getElementById('overlayBg');
+  const pop = document.createElement('div');
+  pop.className = 'popover';
+  const teamLockers = LOCKERS.filter(l=>l.team===lk.team);
+  const rangesText = teamLockers.map(l=>`${l.floor} ${l.zone} ${l.range} (${l.count})`).join('<br>');
+  pop.innerHTML = `
+    <h3>🔑 ${lk.team} 락커</h3>
+    <div class="pos-id">${floor} · ${lk.zone} 구역</div>
+    <div class="seat-view-row"><span class="seat-view-label">배정 범위</span><span class="seat-view-val">${lk.zone} ${lk.range} (${lk.count})</span></div>
+    ${teamLockers.length>1 ? `<div class="seat-view-row"><span class="seat-view-label">팀 전체 락커</span><span class="seat-view-val">${rangesText}</span></div>` : ''}
+    <div class="popover-actions">
+      <button class="btn btn-close" id="lkCloseBtn" style="flex:1;">닫기</button>
+    </div>
+  `;
+  overlay.appendChild(pop);
+  overlay.classList.add('show');
+  pop.classList.add('show');
+  const r = anchorEl.getBoundingClientRect();
+  positionPopover(pop, r.left, r.top);
+  document.getElementById('lkCloseBtn').onclick = closeAllPopovers;
+}
+
+// 락커 번호 범위("07~18")로부터 개수를 자동 계산. 계산 불가하면 null.
+function lockerCountFromRange(range){
+  const m = String(range).match(/(\d+)\s*[~\-]\s*(\d+)/);
+  if(!m) return null;
+  const a = parseInt(m[1],10), b = parseInt(m[2],10);
+  if(isNaN(a) || isNaN(b) || b < a) return null;
+  return (b - a + 1);
+}
+
+function openLockerEditor(id, anchorEl){
+  const lk = LOCKERS.find(l=>l.id===id);
+  if(!lk) return;
+  const pop = document.getElementById('popover');
+  pop.innerHTML = `
+    <h3>🔑 락커 정보</h3>
+    <div class="pos-id">${lk.floor} 구역 락커</div>
+    <label>팀 이름</label>
+    <input type="text" id="lkTeam" value="${escapeHtml(lk.team||'')}" placeholder="예: 운용기획팀 (미배정이면 '미배정')">
+    <label>구역</label>
+    <input type="text" id="lkZone" value="${escapeHtml(lk.zone||'')}" placeholder="예: 7A, 5C, 4W">
+    <label>락커 번호 범위</label>
+    <input type="text" id="lkRange" value="${escapeHtml(lk.range||'')}" placeholder="예: 07~18">
+    <label>개수 <span style="font-weight:400;color:var(--gray);">(범위 입력 시 자동 계산)</span></label>
+    <input type="text" id="lkCount" value="${escapeHtml(lk.count||'')}" placeholder="예: 11개">
+    <div class="popover-actions">
+      <button class="btn btn-clear" id="lkDeleteBtn">락커 삭제</button>
+      <button class="btn btn-save" id="lkEditSave">저장</button>
+    </div>
+    <div class="popover-actions">
+      <button class="btn btn-close" id="lkEditClose" style="flex:1;">닫기</button>
+    </div>
+  `;
+  pop.classList.add('show');
+  document.getElementById('overlayBg').classList.add('show');
+  const r = anchorEl.getBoundingClientRect();
+  positionPopover(pop, r.left, r.top);
+
+  // 범위를 입력하면 개수를 자동으로 채워줌 (사용자가 개수를 직접 고치기 전까지)
+  const rangeInput = document.getElementById('lkRange');
+  const countInput = document.getElementById('lkCount');
+  let countTouched = false;
+  countInput.addEventListener('input', ()=>{ countTouched = true; });
+  rangeInput.addEventListener('input', ()=>{
+    if(countTouched) return;
+    const n = lockerCountFromRange(rangeInput.value);
+    if(n !== null) countInput.value = n + '개';
+  });
+
+  document.getElementById('lkEditClose').onclick = closePopover;
+  document.getElementById('lkEditSave').onclick = async ()=>{
+    const team = document.getElementById('lkTeam').value.trim() || '미배정';
+    const zone = document.getElementById('lkZone').value.trim();
+    const range = document.getElementById('lkRange').value.trim();
+    let count = countInput.value.trim();
+    if(!count){
+      const n = lockerCountFromRange(range);
+      if(n !== null) count = n + '개';
+    }
+    await editLocker(lk.id, {team, zone, range, count});
+    closePopover();
+    renderAll();
+    showToast('락커 정보를 수정했어요');
+  };
+  document.getElementById('lkDeleteBtn').onclick = ()=>{
+    const msg = `${lk.team} 락커(${lk.zone} ${lk.range})를 삭제할까요?`;
+    closePopover();
+    openConfirmPopover(msg, async ()=>{
+      await deleteLocker(lk.id);
+      renderAll();
+      showToast('락커를 삭제했어요');
+    });
+  };
+}
+
+// 락커 필드 수정을 override에 저장 (기본 락커/추가 락커 모두 처리)
+async function editLocker(id, fields){
+  const added = lockerDataOverride.added.find(a=>a.id===id);
+  if(added){
+    Object.assign(added, fields); // 추가된 락커는 항목 자체를 수정
+  } else {
+    lockerDataOverride.edits[id] = {...(lockerDataOverride.edits[id]||{}), ...fields};
+  }
+  await saveLockerData();
+  rebuildLockers();
+}
+
+async function deleteLocker(id){
+  const idx = lockerDataOverride.added.findIndex(a=>a.id===id);
+  if(idx >= 0){
+    lockerDataOverride.added.splice(idx,1); // 추가한 락커면 목록에서 제거
+  } else {
+    if(!lockerDataOverride.deleted.includes(id)) lockerDataOverride.deleted.push(id);
+    delete lockerDataOverride.edits[id];
+  }
+  await saveLockerData();
+  rebuildLockers();
+}
+
+async function addLockerAt(floor, x, y, fields){
+  const newId = 'locker_custom_' + Date.now();
+  const rec = {
+    id:newId, floor,
+    team: fields.team || '미배정',
+    zone: fields.zone || '',
+    range: fields.range || '',
+    count: fields.count || '',
+    x: Math.round(x*100)/100,
+    y: Math.round(y*100)/100
+  };
+  lockerDataOverride.added.push(rec);
+  await saveLockerData();
+  rebuildLockers();
+  return newId;
+}
+
+// 좌석 추가(openNewSeatPopover)와 동일한 방식: 배치도에서 클릭한 위치에 락커를 추가한다.
+function openNewLockerPopover(floor, xPct, yPct, clientX, clientY){
+  const pop = document.getElementById('popover');
+  pop.innerHTML = `
+    <h3>🔑 새 락커 추가</h3>
+    <div class="pos-id">${floor} · 클릭한 위치에 락커를 추가합니다</div>
+    <label>팀 이름</label>
+    <input type="text" id="newLkTeam" placeholder="예: 운용기획팀 (미배정이면 비워두세요)">
+    <label>구역</label>
+    <input type="text" id="newLkZone" placeholder="예: 7A, 5C, 4W">
+    <label>락커 번호 범위</label>
+    <input type="text" id="newLkRange" placeholder="예: 07~18">
+    <label>개수 <span style="font-weight:400;color:var(--gray);">(범위 입력 시 자동 계산)</span></label>
+    <input type="text" id="newLkCount" placeholder="예: 11개">
+    <div class="popover-actions">
+      <button class="btn btn-close" id="newLkCancelBtn">취소</button>
+      <button class="btn btn-save" id="newLkSaveBtn">저장</button>
+    </div>
+  `;
+  pop.classList.add('show');
+  document.getElementById('overlayBg').classList.add('show');
+  positionPopover(pop, clientX, clientY);
+  document.getElementById('newLkTeam').focus();
+
+  const rangeInput = document.getElementById('newLkRange');
+  const countInput = document.getElementById('newLkCount');
+  let countTouched = false;
+  countInput.addEventListener('input', ()=>{ countTouched = true; });
+  rangeInput.addEventListener('input', ()=>{
+    if(countTouched) return;
+    const n = lockerCountFromRange(rangeInput.value);
+    if(n !== null) countInput.value = n + '개';
+  });
+
+  document.getElementById('newLkSaveBtn').onclick = async ()=>{
+    const team = document.getElementById('newLkTeam').value.trim() || '미배정';
+    const zone = document.getElementById('newLkZone').value.trim();
+    const range = rangeInput.value.trim();
+    let count = countInput.value.trim();
+    if(!count){
+      const n = lockerCountFromRange(range);
+      if(n !== null) count = n + '개';
+    }
+    await addLockerAt(floor, xPct, yPct, {team, zone, range, count});
+    closePopover();
+    renderAll();
+    showToast(`${team} 락커를 추가했어요`);
+  };
+  document.getElementById('newLkCancelBtn').onclick = ()=>{ closePopover(); };
 }
 
 function positionPopover(pop, clientX, clientY){
@@ -2409,6 +3517,20 @@ function showToast(msg){
 function closePopover(){
   document.getElementById('popover').classList.remove('show');
   document.getElementById('overlayBg').classList.remove('show');
+}
+
+// 정적 #popover 와 동적으로 생성된 팝오버(락커 등)를 모두 닫는다.
+function closeAllPopovers(){
+  const overlay = document.getElementById('overlayBg');
+  if(overlay){
+    overlay.querySelectorAll('.popover').forEach(p=>p.remove()); // 동적 팝오버 제거
+    overlay.classList.remove('show');
+  }
+  const mainPop = document.getElementById('popover');
+  if(mainPop){
+    mainPop.classList.remove('show');
+    mainPop.classList.remove('wide');
+  }
 }
 
 function escapeHtml(str){
@@ -2721,6 +3843,40 @@ function setupNameAutocomplete(inputId, listId, deptGuess, deptInputId, extInput
   renderSuggestions();
 }
 
+// 해외점포 직원 추가/수정 폼 전용 자동완성.
+// 사내 명단(DATA.employees)에서 이름을 제안하고, 선택 시 직급→직책, 내선→연락처를 채운다.
+// (해외점포는 팀/소속 개념을 별도로 쓰지 않으므로 dept는 채우지 않는다.)
+function setupStaffNameAutocomplete(inputId, listId, titleInputId, extInputId){
+  const input = document.getElementById(inputId);
+  const autolist = document.getElementById(listId);
+  const titleInput = titleInputId ? document.getElementById(titleInputId) : null;
+  const extInput = extInputId ? document.getElementById(extInputId) : null;
+  if(!input || !autolist) return;
+  function renderSuggestions(){
+    const q = input.value.trim();
+    let pool = DATA.employees || [];
+    if(q) pool = pool.filter(e=>e.name.includes(q));
+    pool = pool.slice(0,8);
+    if(!pool.length){ autolist.classList.remove('show'); return; }
+    autolist.innerHTML = pool.map(e=>`<div data-name="${e.name}">${e.name} <span style="color:#8b8b83;font-size:11px;">· ${combineDeptPart(e.dept, e.part)}${e.position?' · '+e.position:''}</span></div>`).join('');
+    autolist.classList.add('show');
+    autolist.querySelectorAll('div').forEach(div=>{
+      div.onclick = ()=>{
+        input.value = div.dataset.name;
+        autolist.classList.remove('show');
+        const emp = empByName(div.dataset.name);
+        if(emp){
+          if(titleInput && emp.position) titleInput.value = emp.position;
+          if(extInput && emp.ext) extInput.value = emp.ext;
+        }
+      };
+    });
+  }
+  input.addEventListener('input', renderSuggestions);
+  input.addEventListener('focus', renderSuggestions);
+  renderSuggestions();
+}
+
 function openZonePopover(floor, id, anchorEl){
   const pop = document.getElementById('popover');
   const z = DATA.floors[floor].zones.find(x=>x.id===id);
@@ -2793,8 +3949,13 @@ function runSearch(q){
   const deptMatches = [...deptSet].slice(0,6);
   const partMatches = [...partSet].slice(0,6);
   const roomMatches = searchRooms(q).slice(0,8);
+  // 락커: 팀명 또는 '락커' 키워드로 검색
+  const lockerMatches = LOCKERS.filter(l =>
+    l.team.includes(q) || '락커'.includes(q) || q.includes('락커') || (l.zone && l.zone.toLowerCase().includes(q.toLowerCase()))
+  ).slice(0,10);
+  const overseasMatches = allOverseasStaff().filter(s=>s.name && s.name.includes(q)).slice(0,10);
 
-  if(!nameMatches.length && !deptMatches.length && !partMatches.length && !roomMatches.length && !contractorMatches.length){
+  if(!nameMatches.length && !deptMatches.length && !partMatches.length && !roomMatches.length && !contractorMatches.length && !lockerMatches.length && !overseasMatches.length){
     box.innerHTML = `<div class="sr-empty">'${q}' 검색 결과가 없습니다</div>`;
     box.classList.add('show');
     return;
@@ -2824,6 +3985,27 @@ function runSearch(q){
       html += `<div class="sr-item" data-group="room" data-value="${r.label}" data-floor="${r.floor}">
         <div><span class="sr-badge room">공간</span><span class="sr-name">${r.label}</span></div>
         <span class="sr-loc">${r.floor}</span>
+      </div>`;
+    }
+  }
+  if(lockerMatches.length){
+    html += `<div class="sr-section-label">락커</div>`;
+    for(const l of lockerMatches){
+      html += `<div class="sr-item" data-group="locker" data-value="${l.id}">
+        <div><span class="sr-badge" style="background:#b5651d;">락커</span><span class="sr-name">${l.team}</span></div>
+        <span class="sr-loc">${l.floor} · ${l.zone} ${l.range}</span>
+      </div>`;
+    }
+  }
+  if(overseasMatches.length){
+    html += `<div class="sr-section-label">해외점포</div>`;
+    for(const s of overseasMatches){
+      html += `<div class="sr-item" data-branch="${s.branchId}" data-staff="${s.id}">
+        <div>
+          <div class="sr-name">${s.name}</div>
+          <div class="sr-meta">${s.branchName}${s.title ? ' · '+s.title : ''}</div>
+        </div>
+        <span class="sr-loc">해외</span>
       </div>`;
     }
   }
@@ -2863,6 +4045,32 @@ function runSearch(q){
   });
   box.querySelectorAll('.sr-item[data-group="room"]').forEach(item=>{
     item.onclick = ()=> goToRoom(item.dataset.floor, item.dataset.value);
+  });
+  box.querySelectorAll('.sr-item[data-group="locker"]').forEach(item=>{
+    item.onclick = ()=> goToLocker(item.dataset.value);
+  });
+  box.querySelectorAll('.sr-item[data-branch]').forEach(item=>{
+    item.onclick = ()=>{
+      document.getElementById('searchResults').classList.remove('show');
+      document.getElementById('searchInput').value = '';
+      const b = OVERSEAS_BRANCHES.find(x=>x.id===item.dataset.branch);
+      if(b) renderOverseasBranchView(b.id, item.dataset.staff);
+    };
+  });
+}
+
+function goToLocker(lockerId){
+  const lk = LOCKERS.find(l=>l.id===lockerId);
+  if(!lk) return;
+  document.getElementById('searchResults').classList.remove('show');
+  document.getElementById('searchInput').value = `${lk.team} 락커`;
+  setHighlight({floor: lk.floor, ids: [lk.id]});
+  currentFloor = lk.floor;
+  renderAll();
+  requestAnimationFrame(()=>{
+    const view = document.querySelector(`.floor-view[data-floor="${lk.floor}"]`);
+    const marker = view && view.querySelector(`.marker[data-id="${CSS.escape(lk.id)}"]`);
+    if(marker) marker.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
   });
 }
 
@@ -2977,6 +4185,9 @@ document.getElementById('searchInput').addEventListener('keydown', (e)=>{
 });
 document.addEventListener('click', (e)=>{
   if(!e.target.closest('.search-wrap')) document.getElementById('searchResults').classList.remove('show');
+  if(!e.target.closest('.overseas-wrap')){
+    document.querySelectorAll('.overseas-menu.show').forEach(m=>m.classList.remove('show'));
+  }
 });
 
 function exportBackup(){
@@ -3098,6 +4309,7 @@ function openHelpModal(){
 
       <h4>📋 전체 목록 보기</h4>
       <p>각 층 화면의 <b>"전체 목록 보기"</b> 버튼을 누르면 그 층에 있는 팀·회의실·시설물 목록과 색상을 한눈에 볼 수 있어요. 항목을 클릭하면 해당 위치가 바로 표시돼요.</p>
+      <p style="color:#8a5cb5;"><b>관리자 전용:</b> 목록의 항목을 마우스로 끌어(드래그) 순서를 바꾸거나, <b>다른 카테고리(팀·회의실·공간·시설)로 옮길</b> 수 있어요. 옮긴 결과는 모든 직원에게 그대로 저장·반영됩니다.</p>
 
       <h4>🎨 도형·색상 의미</h4>
       <div class="shape-row"><span class="shape-swatch" style="background:#4a9d6f;border-radius:50%;"></span> 원 = 직원 좌석 (팀별 색상)</div>
@@ -3105,6 +4317,15 @@ function openHelpModal(){
       <div class="shape-row"><span class="shape-swatch" style="background:#8a5cb5;transform:rotate(45deg);"></span> 마름모 = OA·시설물</div>
       <div class="shape-row"><span class="shape-swatch" style="background:#e4e1d6;border:1.5px dashed #b7b39f;border-radius:50%;"></span> 점선 회색 원 = 공석</div>
       <div class="shape-row"><span class="shape-swatch" style="background:#c9822f;border:1.5px dotted #7a4e14;border-radius:50%;"></span> 점선 주황 원 = 외주석</div>
+
+      <h4>🔑 개인락커 관리 (관리자 전용)</h4>
+      <p>락커는 직원 좌석과 똑같은 방식으로 다룹니다.</p>
+      <ul>
+        <li><b>추가</b>: 각 층 상단 "+ 락커 추가"를 누르면 추가 모드가 켜져요. 배치도에서 락커를 놓을 위치를 클릭하면 팀·구역·번호 입력창이 열립니다. 번호 범위(예: 07~18)를 넣으면 개수가 자동 계산돼요. (모드가 켜진 동안 여러 개 연속 추가 가능, 버튼을 다시 누르면 꺼짐)</li>
+        <li><b>수정·삭제</b>: 배치도의 갈색 락커 마커를 클릭하면 바로 정보 입력창이 열려요. 값을 고치고 "저장", 없앨 때는 "락커 삭제".</li>
+        <li><b>위치 이동</b>: 락커 마커를 마우스로 끌어 원하는 자리로 옮길 수 있어요.</li>
+      </ul>
+      <p style="color:var(--gray);font-size:12px;">모든 변경은 자동 저장되어 전 직원에게 반영됩니다. (강력 새로고침 Ctrl+Shift+R 후 확인)</p>
     </div>
     <div class="popover-actions">
       <button class="btn btn-close" id="helpCloseBtn" style="flex:1;">닫기</button>
@@ -3187,6 +4408,87 @@ async function syncRosterToSeats(){
 
 document.getElementById('exportBtn').addEventListener('click', exportBackup);
 document.getElementById('syncBtn').addEventListener('click', syncRosterToSeats);
+document.getElementById('visitStatsBtn').addEventListener('click', (e)=> openVisitStatsPopover(e.currentTarget));
+document.getElementById('rosterBtn').addEventListener('click', ()=>{
+  document.getElementById('rosterFile').click();
+});
+document.getElementById('rosterFile').addEventListener('change', handleRosterUpload);
+
+async function handleRosterUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  e.target.value = ''; // 같은 파일 다시 선택 가능하게 초기화
+
+  if(typeof XLSX === 'undefined'){
+    showToast('엑셀 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인해 주세요');
+    return;
+  }
+
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+    // 헤더 행 찾기: '이름'이 포함된 행
+    let headerRow = -1;
+    for(let i=0; i<rows.length; i++){
+      if(rows[i].some(c => String(c).trim()==='이름')){ headerRow = i; break; }
+    }
+    if(headerRow === -1){
+      showToast('엑셀에서 "이름" 헤더를 찾을 수 없어요. 표준 양식을 사용해 주세요');
+      return;
+    }
+
+    // 열 위치 파악
+    const hdr = rows[headerRow].map(c=>String(c).trim());
+    const colName = hdr.indexOf('이름');
+    const colDept = hdr.findIndex(h=>h.includes('소속'));
+    const colPart = hdr.indexOf('파트');
+    const colPos  = hdr.indexOf('직급');
+    const colExt  = hdr.findIndex(h=>h.includes('내선'));
+    if(colName<0 || colExt<0){
+      showToast('필수 열(이름, 내선번호)을 찾을 수 없어요');
+      return;
+    }
+
+    const list = [];
+    for(let i=headerRow+1; i<rows.length; i++){
+      const row = rows[i];
+      const name = String(row[colName]||'').trim();
+      const ext = String(row[colExt]||'').trim();
+      if(!name) continue; // 이름 없는 줄 건너뜀
+      list.push({
+        name,
+        dept: colDept>=0 ? String(row[colDept]||'').trim() : '',
+        part: colPart>=0 ? String(row[colPart]||'').trim() : '',
+        position: colPos>=0 ? String(row[colPos]||'').trim() : '',
+        ext
+      });
+    }
+
+    if(list.length === 0){
+      showToast('엑셀에서 직원 정보를 찾을 수 없어요');
+      return;
+    }
+
+    openConfirmPopover(`엑셀에서 직원 ${list.length}명을 읽었어요.\n이 명단으로 기존 명단을 교체할까요?\n\n(교체 후 "명단 동기화"를 눌러야 좌석에도 반영돼요)`, async ()=>{
+      try{
+        await saveEmployees(list);
+        DATA.employees = list;
+        showToast(`명단 ${list.length}명을 저장했어요. 이제 "명단 동기화"를 눌러 주세요`);
+      }catch(err){
+        console.error('roster save failed', err);
+        showToast('명단 저장 중 오류가 발생했어요. 다시 시도해 주세요');
+      }
+    });
+  }catch(err){
+    console.error('roster parse failed', err);
+    showToast('엑셀을 읽는 중 오류가 발생했어요. 파일 형식을 확인해 주세요');
+  }
+}
+
+document.getElementById('undoBtn').addEventListener('click', doUndo);
 document.getElementById('importBtn').addEventListener('click', ()=>{
   document.getElementById('importFile').click();
 });
@@ -3195,6 +4497,82 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   if(file) importBackup(file);
   e.target.value = '';
 });
+
+// ── 방문자 통계 ──────────────────────────────────────────────
+// 구글 시트 'visitStats' 키에 날짜별 방문 수를 저장. 하루 1인 1회(중복 제외).
+const VISIT_KEY = 'visitStats';
+let visitStats = { daily: {} };
+
+function localDateStr(d){
+  d = d || new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+async function loadVisitStats(){
+  try{
+    const res = await gsGet(VISIT_KEY);
+    if(res && res.value) visitStats = JSON.parse(res.value);
+  }catch(e){ /* 아직 없음 */ }
+  if(!visitStats || !visitStats.daily) visitStats = { daily:{} };
+}
+
+// 페이지 열릴 때 호출. 이 기기가 오늘 아직 카운트 안 됐으면 오늘 방문 +1.
+async function recordVisit(){
+  const today = localDateStr();
+  let last = null;
+  try{ last = localStorage.getItem('kr_last_visit'); }catch(e){}
+  if(last === today) return; // 오늘 이미 카운트됨
+  try{
+    const res = await gsGet(VISIT_KEY);
+    let stats = { daily:{} };
+    if(res && res.value){ try{ stats = JSON.parse(res.value); }catch(e){} }
+    if(!stats.daily) stats.daily = {};
+    stats.daily[today] = (stats.daily[today]||0) + 1;
+    await gsSet(VISIT_KEY, JSON.stringify(stats));
+    visitStats = stats;
+    try{ localStorage.setItem('kr_last_visit', today); }catch(e){}
+  }catch(e){ console.warn('방문 기록 실패', e); }
+}
+
+function computeVisitSummary(){
+  const daily = (visitStats && visitStats.daily) ? visitStats.daily : {};
+  const today = localDateStr();
+  const now = new Date();
+  const dow = (now.getDay()+6)%7; // 월=0 ... 일=6
+  const monday = new Date(now); monday.setDate(now.getDate()-dow);
+  const mondayStr = localDateStr(monday);
+  let todayCount = daily[today]||0, weekCount = 0, totalCount = 0;
+  for(const [date, cnt] of Object.entries(daily)){
+    const n = Number(cnt)||0;
+    totalCount += n;
+    if(date >= mondayStr && date <= today) weekCount += n;
+  }
+  return { todayCount, weekCount, totalCount, mondayStr };
+}
+
+async function openVisitStatsPopover(anchorEl){
+  await loadVisitStats(); // 최신 값으로 갱신
+  const { todayCount, weekCount, totalCount, mondayStr } = computeVisitSummary();
+  const pop = document.getElementById('popover');
+  pop.innerHTML = `
+    <h3>📊 방문자 통계</h3>
+    <div class="pos-id">하루 1인 1회 기준 (같은 기기 중복 제외)</div>
+    <div class="visit-stat-row"><span>오늘</span><b>${todayCount.toLocaleString()}명</b></div>
+    <div class="visit-stat-row"><span>이번 주 <span class="visit-sub">(${mondayStr} ~)</span></span><b>${weekCount.toLocaleString()}명</b></div>
+    <div class="visit-stat-row total"><span>전체 누적</span><b>${totalCount.toLocaleString()}명</b></div>
+    <div class="popover-actions">
+      <button class="btn btn-close" id="visitCloseBtn" style="flex:1;">닫기</button>
+    </div>
+  `;
+  pop.classList.add('show');
+  document.getElementById('overlayBg').classList.add('show');
+  const r = anchorEl.getBoundingClientRect();
+  positionPopover(pop, r.left, r.bottom || r.top);
+  document.getElementById('visitCloseBtn').onclick = closePopover;
+}
 
 function updateAdminUI(){
   const btn = document.getElementById('adminToggleBtn');
@@ -3206,11 +4584,13 @@ function updateAdminUI(){
   modeHint.textContent = isAdmin
     ? '관리자 모드: 좌석 추가/삭제, 정렬, 명단 동기화가 가능해요'
     : '좌석을 클릭하면 이름·소속·담당업무 등을 직접 수정할 수 있어요';
+  updateUndoButton();
 }
 
 document.getElementById('adminToggleBtn').addEventListener('click', (e)=>{
   if(isAdmin){
     isAdmin = false;
+    clearUndo();
     updateAdminUI();
     renderAll();
     showToast('관리자 모드를 종료했어요');
@@ -3260,6 +4640,8 @@ async function silentRefresh(){
   if(document.getElementById('overlayBg').classList.contains('show')) return;
 
   try{ await loadAllFloorMeta(); }catch(e){ /* keep using the last known meta */ }
+  try{ await loadLockerPositions(); }catch(e){ /* keep current locker positions */ }
+  try{ await loadLockerData(); }catch(e){ /* keep current locker data */ }
 
   let anyChanged = false;
   for(const floor of Object.keys(DATA.floors)){
@@ -3304,6 +4686,18 @@ async function silentRefresh(){
     loadAllLegendOrders().catch(e=>{
       console.error('loadAllLegendOrders failed entirely', e);
     }),
+    loadLegendCategoryOverrides().catch(e=>{
+      console.error('loadLegendCategoryOverrides failed entirely', e);
+    }),
+    loadLockerPositions().catch(e=>{
+      console.error('loadLockerPositions failed entirely', e);
+    }),
+    loadLockerData().catch(e=>{
+      console.error('loadLockerData failed entirely', e);
+    }),
+    loadOverseasData().catch(e=>{
+      console.error('loadOverseasData failed entirely', e);
+    }),
     loadEmployees().then(emp=>{
       if(emp === null){
         showToast('직원 명단이 아직 업로드되지 않았어요. 관리자에게 문의해 주세요');
@@ -3320,6 +4714,7 @@ async function silentRefresh(){
   renderAll(); // always render, even if the above had partial failures - never leave the screen blank
   clearTimeout(safetyTimer);
   if(loader) loader.classList.add('hide');
+  recordVisit(); // 방문 기록 (하루 1인 1회, 화면 렌더링과 무관하게 백그라운드 실행)
   setInterval(silentRefresh, 60000); // check for updates from other users once a minute
 })();
 </script>

@@ -2248,6 +2248,17 @@ function branchIsPublished(id){
   return !!(OVERSEAS_DATA[id] && OVERSEAS_DATA[id].published);
 }
 
+// 드롭다운 배지 등에서 쓰는 실제 인원수.
+// 배치도형(자율좌석제 제외) 지점은 이름이 배정된 좌석 수, 그 외(자율좌석제·정보형)는 명단 인원 수.
+function overseasPeopleCount(b){
+  const usesFloorplan = b.viewType==='floorplan' && branchHasFloorplan(b.id) && !b.freeSeating;
+  if(usesFloorplan){
+    const arr = seats[b.id] || [];
+    return arr.filter(s => s.name && s.name.trim() && !s.vacant).length;
+  }
+  return (OVERSEAS_DATA[b.id]?.staff || []).length;
+}
+
 function allOverseasStaff(){
   const list = [];
   for(const b of OVERSEAS_BRANCHES){
@@ -2302,7 +2313,7 @@ function renderTabs(){
     menu.className = 'overseas-menu';
     menu.innerHTML = visibleBranches.map(b=>{
       const published = branchIsPublished(b.id);
-      const count = (OVERSEAS_DATA[b.id]?.staff||[]).length;
+      const count = overseasPeopleCount(b);
       const badgeText = isAdmin ? (published ? '공개중' : '비공개') : (count ? count+'명' : '보기');
       return `<div class="overseas-item ${published?'':'draft'}" data-id="${b.id}">
         <span>${b.name}</span>

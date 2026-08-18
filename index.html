@@ -2249,12 +2249,13 @@ function branchIsPublished(id){
 }
 
 // 드롭다운 배지 등에서 쓰는 실제 인원수.
-// 배치도형(자율좌석제 제외) 지점은 이름이 배정된 좌석 수, 그 외(자율좌석제·정보형)는 명단 인원 수.
+// 배치도형(자율좌석제 제외) 지점은 '사람 좌석'만 카운트. 회의실·OA 등 시설물 좌석은
+// 소속(dept)도 내선(ext)도 없으므로 제외한다. (앱의 시설물 판별 규칙과 동일)
 function overseasPeopleCount(b){
   const usesFloorplan = b.viewType==='floorplan' && branchHasFloorplan(b.id) && !b.freeSeating;
   if(usesFloorplan){
     const arr = seats[b.id] || [];
-    return arr.filter(s => s.name && s.name.trim() && !s.vacant).length;
+    return arr.filter(s => s.name && s.name.trim() && !s.vacant && (s.dept || s.ext)).length;
   }
   return (OVERSEAS_DATA[b.id]?.staff || []).length;
 }

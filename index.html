@@ -36,38 +36,58 @@
     margin:0 auto;
   }
   header{
-    padding:10px 20px 10px;
+    padding:8px 20px;
     border-bottom:1px solid var(--line);
     background:var(--white);
   }
-  .header-top{
+  .header-row{
     display:flex;
     align-items:center;
-    justify-content:space-between;
     gap:10px;
-    margin-bottom:8px;
+    flex-wrap:wrap;
   }
-  .collapse-btn{
-    flex-shrink:0;
-    padding:5px 12px;
-    border:1px solid var(--line);
-    border-radius:16px;
-    background:var(--white);
-    color:var(--gray);
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
+  .header-row-2{ margin-top:8px; }
+  .app-title{
+    font-family:var(--serif);
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:-0.2px;
+    color:var(--ink);
     white-space:nowrap;
+    flex-shrink:0;
   }
-  .collapse-btn:hover{ border-color:var(--gray); color:var(--ink); }
-  #headerCollapsible{
-    overflow:hidden;
-    transition:none;
+  .header-row .search-wrap{
+    flex:1 1 240px;
+    min-width:180px;
+    position:relative;
   }
-  /* 접힘 상태: 층탭·관리자줄·부제목을 숨겨 배치도 영역을 넓힘 */
-  header.collapsed #headerCollapsible{ display:none; }
-  header.collapsed .title-row .sub{ display:none; }
-  header.collapsed{ padding-bottom:8px; }
+  .header-row .tabs{
+    margin-top:0;
+  }
+  .header-row-2 .tabs{ flex:1 1 auto; }
+  .header-row-2 .admin-tools-dd{ flex-shrink:0; }
+  /* 관리 도구 드롭다운 (관리자 모드에서만 표시) */
+  .admin-tools-dd{
+    position:relative;
+    display:none;
+  }
+  .admin-tools-menu{
+    position:absolute;
+    top:calc(100% + 6px);
+    right:0;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.15);
+    padding:6px;
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    z-index:60;
+    min-width:180px;
+  }
+  .admin-tools-menu.show{ display:flex; }
+  .admin-tools-menu .backup-btn{ text-align:left; width:100%; }
   .title-row{
     display:flex;
     align-items:baseline;
@@ -1050,21 +1070,18 @@
 <body>
 <div class="app">
   <header id="appHeader">
-    <div class="header-top">
-      <div class="title-row">
-        <h1>좌석·시설 찾기</h1>
-        <span class="sub">시그니쳐타워 4F · 5F · 7F</span>
+    <div class="header-row header-row-1">
+      <span class="app-title">좌석·시설 찾기</span>
+      <div class="search-wrap">
+        <input class="search-input" id="searchInput" type="text" placeholder="🔍 직원 이름·팀·파트·회의실 검색" autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
       </div>
-      <button class="collapse-btn" id="collapseBtn" aria-label="상단 메뉴 접기/펴기">▲ 접기</button>
     </div>
-    <div class="search-wrap">
-      <input class="search-input" id="searchInput" type="text" placeholder="직원 이름으로 검색" autocomplete="off">
-      <div class="search-results" id="searchResults"></div>
-    </div>
-    <div id="headerCollapsible">
+    <div class="header-row header-row-2">
       <div class="tabs" id="tabs"></div>
-      <div class="backup-row">
-        <span id="adminOnlyBtns">
+      <span id="adminOnlyBtns" class="admin-tools-dd">
+        <button class="backup-btn" id="adminToolsBtn">⚙ 관리 도구 ▾</button>
+        <div class="admin-tools-menu" id="adminToolsMenu">
           <button class="backup-btn" id="undoBtn" style="display:none;">↩ 실행 취소</button>
           <button class="backup-btn" id="changeLogBtn">📋 수정 목록</button>
           <button class="backup-btn" id="exportBtn">⬇ 백업 내보내기</button>
@@ -1072,12 +1089,12 @@
           <button class="backup-btn" id="rosterBtn">📋 명단 엑셀 업로드</button>
           <button class="backup-btn" id="syncBtn">🔄 명단 동기화</button>
           <button class="backup-btn" id="visitStatsBtn">📊 방문자 통계</button>
-        </span>
-        <input type="file" id="importFile" accept=".json" style="display:none;">
-        <input type="file" id="rosterFile" accept=".xlsx,.xls" style="display:none;">
-        <span class="backup-hint" id="modeHint">작업 중간중간 내보내기를 눌러 저장해 두세요</span>
-      </div>
+        </div>
+      </span>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+      <input type="file" id="rosterFile" accept=".xlsx,.xls" style="display:none;">
     </div>
+    <span class="backup-hint" id="modeHint" style="display:none;"></span>
   </header>
   <main id="main"></main>
   <div id="initialLoader" class="initial-loader">
@@ -4633,10 +4650,12 @@ function updateAdminUI(){
   const modeHint = document.getElementById('modeHint');
   btn.textContent = isAdmin ? '관리자 모드 켜짐' : '관리자';
   btn.classList.toggle('on', isAdmin);
-  adminOnly.style.display = isAdmin ? 'inline' : 'none';
-  modeHint.textContent = isAdmin
-    ? '관리자 모드: 좌석 추가/삭제, 정렬, 명단 동기화가 가능해요'
-    : '좌석을 클릭하면 이름·소속·담당업무 등을 직접 수정할 수 있어요';
+  adminOnly.style.display = isAdmin ? 'inline-block' : 'none';
+  if(!isAdmin){
+    const menu = document.getElementById('adminToolsMenu');
+    if(menu) menu.classList.remove('show');
+  }
+  if(modeHint) modeHint.textContent = '';
   updateUndoButton();
 }
 
@@ -4652,25 +4671,16 @@ document.getElementById('adminToggleBtn').addEventListener('click', (e)=>{
   openAdminPinPopover(e.currentTarget);
 });
 
-// 상단 메뉴 접기/펴기 (작은 화면에서 배치도를 넓게 보기 위함). 상태는 기기에 저장됨.
-function applyHeaderCollapsed(collapsed){
-  const header = document.getElementById('appHeader');
-  const btn = document.getElementById('collapseBtn');
-  if(!header || !btn) return;
-  header.classList.toggle('collapsed', collapsed);
-  btn.textContent = collapsed ? '▼ 펴기' : '▲ 접기';
-}
-document.getElementById('collapseBtn').addEventListener('click', ()=>{
-  const header = document.getElementById('appHeader');
-  const nowCollapsed = !header.classList.contains('collapsed');
-  applyHeaderCollapsed(nowCollapsed);
-  try{ localStorage.setItem('kr_header_collapsed', nowCollapsed ? '1' : '0'); }catch(e){}
+// 관리 도구 드롭다운 열기/닫기
+document.getElementById('adminToolsBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('adminToolsMenu').classList.toggle('show');
 });
-(function initHeaderCollapse(){
-  let saved = '0';
-  try{ saved = localStorage.getItem('kr_header_collapsed') || '0'; }catch(e){}
-  applyHeaderCollapsed(saved === '1');
-})();
+document.addEventListener('click', (e)=>{
+  const menu = document.getElementById('adminToolsMenu');
+  const dd = e.target.closest('.admin-tools-dd');
+  if(menu && !dd) menu.classList.remove('show');
+});
 
 function openAdminPinPopover(anchorEl){
   const pop = document.getElementById('popover');

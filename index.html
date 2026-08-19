@@ -3977,11 +3977,12 @@ function allSeatsForFloor(floor){
 
 function allContractorSeats(){
   // seats placed with a name not found in the official roster (contractors/dispatched staff)
+  // 시설물(피난계단·회의실 등: 소속·내선 둘 다 없음)은 사람이 아니므로 제외한다.
   const out = [];
   const seen = new Set();
   for(const floor of Object.keys(seats)){
     for(const s of seats[floor]){
-      if(s.name && !empByName(s.name) && !seen.has(s.name)){
+      if(s.name && !s.vacant && (s.dept || s.ext) && !empByName(s.name) && !seen.has(s.name)){
         seen.add(s.name);
         out.push({name: s.name, dept: s.dept||'', position: s.position||'', floor});
       }
@@ -3992,14 +3993,34 @@ function allContractorSeats(){
 
 function searchRooms(q){
   const out = [];
+  const ql = q.toLowerCase();
+  const seenAnchor = new Set();
+  // 1) 미리 정의된 공간 앵커(roomAnchors)
   for(const floor of Object.keys(DATA.roomAnchors || {})){
     for(const r of DATA.roomAnchors[floor]){
       const names = [r.label, ...(r.aliases||[])];
-      if(names.some(n => n.toLowerCase().includes(q.toLowerCase()))){
-        out.push({floor, label: r.label, x: r.x, y: r.y});
+      if(names.some(n => n.toLowerCase().includes(ql))){
+        const key = floor + '|' + r.label;
+        if(seenAnchor.has(key)) continue;
+        seenAnchor.add(key);
+        out.push({floor, label: r.label, x: r.x, y: r.y, ids: []});
       }
     }
   }
+  // 2) 배치도에 직접 추가된 시설물 좌석(피난계단·OA 등: 소속·내선 없음).
+  //    같은 층에 같은 이름이 여러 개면 하나의 결과로 묶고, 그 층의 모든 좌석 id를 모은다.
+  const groups = {}; // "floor|label" -> {floor, label, ids, x, y}
+  for(const floor of Object.keys(seats)){
+    for(const s of seats[floor]){
+      if(s.name && !s.vacant && !s.dept && !s.ext && s.name.toLowerCase().includes(ql)){
+        const key = floor + '|' + s.name;
+        if(seenAnchor.has(key)) continue; // 이미 앵커로 잡힌 건 제외
+        if(!groups[key]) groups[key] = {floor, label: s.name, ids: [], x: s.x, y: s.y};
+        groups[key].ids.push(s.id);
+      }
+    }
+  }
+  for(const key of Object.keys(groups)) out.push(groups[key]);
   return out;
 }
 
@@ -4018,7 +4039,10 @@ function runSearch(q){
   }
   const deptMatches = [...deptSet].slice(0,6);
   const partMatches = [...partSet].slice(0,6);
-  const roomMatches = searchRooms(q).slice(0,8);
+  let roomMatches = searchRooms(q);
+  // 현재 보고 있는 층의 결과를 맨 위로 (엔터/첫 결과 선택 시 현재 층이 우선되도록)
+  roomMatches.sort((a,b)=> (b.floor===currentFloor?1:0) - (a.floor===currentFloor?1:0));
+  roomMatches = roomMatches.slice(0,8);
   // 락커: 팀명 또는 '락커' 키워드로 검색
   const lockerMatches = LOCKERS.filter(l =>
     l.team.includes(q) || '락커'.includes(q) || q.includes('락커') || (l.zone && l.zone.toLowerCase().includes(q.toLowerCase()))
@@ -4052,7 +4076,7 @@ function runSearch(q){
   if(roomMatches.length){
     html += `<div class="sr-section-label">공간 / 회의실</div>`;
     for(const r of roomMatches){
-      html += `<div class="sr-item" data-group="room" data-value="${r.label}" data-floor="${r.floor}">
+      html += `<div class="sr-item" data-group="room" data-value="${r.label}" data-floor="${r.floor}" data-ids="${(r.ids||[]).join(',')}">
         <div><span class="sr-badge room">공간</span><span class="sr-name">${r.label}</span></div>
         <span class="sr-loc">${r.floor}</span>
       </div>`;
@@ -4114,7 +4138,11 @@ function runSearch(q){
     item.onclick = ()=> goToGroup(item.dataset.group, item.dataset.value);
   });
   box.querySelectorAll('.sr-item[data-group="room"]').forEach(item=>{
-    item.onclick = ()=> goToRoom(item.dataset.floor, item.dataset.value);
+    item.onclick = ()=>{
+      const ids = item.dataset.ids ? item.dataset.ids.split(',').filter(Boolean) : [];
+      if(ids.length) goToRoomSeats(item.dataset.floor, ids, item.dataset.value);
+      else goToRoom(item.dataset.floor, item.dataset.value);
+    };
   });
   box.querySelectorAll('.sr-item[data-group="locker"]').forEach(item=>{
     item.onclick = ()=> goToLocker(item.dataset.value);
@@ -4156,6 +4184,21 @@ function goToRoom(floor, label){
     const view = document.querySelector(`.floor-view[data-floor="${floor}"]`);
     const anchorEl = view.querySelector('.zone-anchor');
     if(anchorEl) anchorEl.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+  });
+}
+
+// 배치도에 추가된 시설물 좌석(피난계단 등)으로 이동해 해당 층의 동일 시설물을 모두 하이라이트
+function goToRoomSeats(floor, ids, label){
+  document.getElementById('searchResults').classList.remove('show');
+  document.getElementById('searchInput').value = label || '';
+  setHighlight({ floor, ids: ids.slice() });
+  currentFloor = floor;
+  renderAll();
+  requestAnimationFrame(()=>{
+    const view = document.querySelector(`.floor-view[data-floor="${floor}"]`);
+    if(!view) return;
+    const marker = view.querySelector(`.marker[data-id="${ids[0]}"]`);
+    if(marker) marker.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
   });
 }
 
@@ -4249,7 +4292,10 @@ document.getElementById('searchInput').addEventListener('keydown', (e)=>{
   const q = e.target.value.trim();
   if(!q) return;
   runSearch(q); // ensure results reflect the current text even if debounce hasn't fired yet
-  const first = document.querySelector('#searchResults .sr-item');
+  const results = document.getElementById('searchResults');
+  // 현재 층에 해당하는 결과가 있으면 우선, 없으면 첫 결과
+  const preferred = results.querySelector(`.sr-item[data-floor="${currentFloor}"]`);
+  const first = preferred || results.querySelector('.sr-item');
   if(first) first.click();
   else showToast(`'${q}' 검색 결과가 없습니다`);
 });

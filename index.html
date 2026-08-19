@@ -1073,7 +1073,7 @@
     <div class="header-row header-row-1">
       <span class="app-title">좌석·시설 찾기</span>
       <div class="search-wrap">
-        <input class="search-input" id="searchInput" type="text" placeholder="🔍 직원 이름·팀·파트·회의실 검색" autocomplete="off">
+        <input class="search-input" id="searchInput" type="text" placeholder="🔍 직원 이름·팀명·파트명·회의실 검색" autocomplete="off">
         <div class="search-results" id="searchResults"></div>
       </div>
     </div>
@@ -4364,22 +4364,27 @@ document.getElementById('changeLogBtn').addEventListener('click', openChangeLogM
 function openHelpModal(){
   const pop = document.getElementById('popover');
   pop.classList.add('wide');
-  pop.innerHTML = `
+
+  const readerHelp = `
     <h3>이용 방법</h3>
     <div class="help-content">
       <h4>🔍 검색</h4>
       <p>상단 검색창에 <b>이름·팀명·파트명·공간 이름</b>(회의실, 라운지 등)을 입력하면 배치도에서 위치를 찾아 빨간색으로 깜빡이며 표시해줘요.</p>
 
-      <h4>🖱️ 좌석 정보 확인·수정</h4>
-      <p>배치도 위 점(도형)을 클릭하면 정보창이 열려요. <b>이름, 소속, 내선번호, 담당업무</b>를 직접 입력하거나 수정할 수 있어요.</p>
-      <ul>
-        <li>자리가 바뀌었다면 이름을 직접 고쳐주세요.</li>
-        <li>자리가 비었다면 "공석" 체크박스를 눌러주세요.</li>
-      </ul>
+      <h4>🖱️ 좌석 정보 확인</h4>
+      <p>배치도 위 점(도형)을 클릭하면 그 자리의 <b>이름·소속·내선번호·담당업무</b>를 확인할 수 있어요.</p>
+
+      <h4>🏢 층 이동</h4>
+      <p>상단의 <b>7F · 5F · 4F</b> 탭을 눌러 층을 바꿔볼 수 있어요.</p>
+
+      <h4>🌐 해외점포</h4>
+      <p><b>🌐 해외점포</b> 메뉴에서 지점을 선택하면 그 사무소의 배치도나 근무 인원 명단을 볼 수 있어요.</p>
 
       <h4>📋 전체 목록 보기</h4>
-      <p>각 층 화면의 <b>"전체 목록 보기"</b> 버튼을 누르면 그 층에 있는 팀·회의실·시설물 목록과 색상을 한눈에 볼 수 있어요. 항목을 클릭하면 해당 위치가 바로 표시돼요.</p>
-      <p style="color:#8a5cb5;"><b>관리자 전용:</b> 목록의 항목을 마우스로 끌어(드래그) 순서를 바꾸거나, <b>다른 카테고리(팀·회의실·공간·시설)로 옮길</b> 수 있어요. 옮긴 결과는 모든 직원에게 그대로 저장·반영됩니다.</p>
+      <p><b>"전체 목록 보기"</b>를 누르면 그 층의 팀·회의실·시설물 목록과 색상을 한눈에 볼 수 있어요. 항목을 클릭하면 해당 위치가 바로 표시돼요.</p>
+
+      <h4>🔑 개인락커</h4>
+      <p>배치도의 <b>갈색 락커 마커</b>를 클릭하면 팀별 락커 배정 범위를 확인할 수 있어요.</p>
 
       <h4>🎨 도형·색상 의미</h4>
       <div class="shape-row"><span class="shape-swatch" style="background:#4a9d6f;border-radius:50%;"></span> 원 = 직원 좌석 (팀별 색상)</div>
@@ -4387,16 +4392,61 @@ function openHelpModal(){
       <div class="shape-row"><span class="shape-swatch" style="background:#8a5cb5;transform:rotate(45deg);"></span> 마름모 = OA·시설물</div>
       <div class="shape-row"><span class="shape-swatch" style="background:#e4e1d6;border:1.5px dashed #b7b39f;border-radius:50%;"></span> 점선 회색 원 = 공석</div>
       <div class="shape-row"><span class="shape-swatch" style="background:#c9822f;border:1.5px dotted #7a4e14;border-radius:50%;"></span> 점선 주황 원 = 외주석</div>
+      <div class="shape-row"><span class="shape-swatch" style="background:#8a5a2a;border-radius:50%;"></span> 갈색 원 = 개인락커</div>
+    </div>`;
 
-      <h4>🔑 개인락커 관리 (관리자 전용)</h4>
-      <p>락커는 직원 좌석과 똑같은 방식으로 다룹니다.</p>
+  const adminHelp = `
+    <h3>관리자 매뉴얼</h3>
+    <div class="help-content">
+      <p style="color:#2d6cdf;font-weight:600;">관리자 모드에서 사용할 수 있는 기능 설명입니다.</p>
+
+      <h4>🖱️ 좌석 추가·수정·삭제</h4>
       <ul>
-        <li><b>추가</b>: 각 층 상단 "+ 락커 추가"를 누르면 추가 모드가 켜져요. 배치도에서 락커를 놓을 위치를 클릭하면 팀·구역·번호 입력창이 열립니다. 번호 범위(예: 07~18)를 넣으면 개수가 자동 계산돼요. (모드가 켜진 동안 여러 개 연속 추가 가능, 버튼을 다시 누르면 꺼짐)</li>
-        <li><b>수정·삭제</b>: 배치도의 갈색 락커 마커를 클릭하면 바로 정보 입력창이 열려요. 값을 고치고 "저장", 없앨 때는 "락커 삭제".</li>
-        <li><b>위치 이동</b>: 락커 마커를 마우스로 끌어 원하는 자리로 옮길 수 있어요.</li>
+        <li><b>수정</b>: 배치도의 좌석을 클릭하면 바로 편집창이 열려요. 이름·소속·파트·내선번호·담당업무를 고치고 저장하세요.</li>
+        <li><b>공석</b>: 자리가 비었으면 "공석" 체크박스를 켜세요.</li>
+        <li><b>추가</b>: 상단 <b>"+ 좌석 추가"</b>를 누른 뒤 배치도의 빈 자리를 클릭하면 입력창이 열려요. 이름 입력 시 사내 명단 자동완성이 됩니다.</li>
+        <li><b>삭제</b>: 좌석 편집창 안의 "좌석 삭제" 버튼.</li>
       </ul>
+
+      <h4>↕ 정렬 모드</h4>
+      <p><b>"↕ 정렬 모드"</b>에서 같은 줄/열의 좌석들을 클릭해 선택한 뒤 줄맞추기·간격 균등화를 할 수 있어요.</p>
+
+      <h4>📋 전체 목록 — 순서·카테고리 변경</h4>
+      <p>전체 목록에서 항목을 마우스로 끌어(드래그) 순서를 바꾸거나, <b>다른 카테고리(팀·회의실·공간·시설)로 옮길</b> 수 있어요. 결과는 전 직원에게 저장·반영됩니다.</p>
+
+      <h4>🔑 개인락커 관리</h4>
+      <ul>
+        <li><b>추가</b>: 각 층 상단 "+ 락커 추가" → 배치도에서 위치 클릭 → 팀·구역·번호 입력. 번호 범위(예: 07~18) 입력 시 개수 자동 계산.</li>
+        <li><b>수정·삭제</b>: 갈색 락커 마커 클릭 → 정보 수정 또는 "락커 삭제".</li>
+        <li><b>위치 이동</b>: 락커 마커를 끌어 원하는 자리로 이동.</li>
+      </ul>
+
+      <h4>🌐 해외점포 관리</h4>
+      <ul>
+        <li>배치도형 지점: 좌석을 찍어 인원을 관리하고, 화면 상단 <b>사무소 정보</b>에서 주소·전화를 입력해요.</li>
+        <li><b>공개/비공개</b>: 배치도 화면 상단의 <b>🔓 전 직원에게 공개</b> / <b>🔒 비공개로 전환</b> 버튼으로 노출 여부를 조절해요. 공개 전까지는 관리자에게만 보입니다.</li>
+        <li>자율좌석제 지점(스위스법인 등)은 좌석 대신 <b>인원 명단</b>으로 관리해요.</li>
+      </ul>
+
+      <h4>📋 명단 관리 (관리 도구)</h4>
+      <ul>
+        <li><b>명단 엑셀 업로드</b>: 마스터 명단(엑셀)을 올려 최신화.</li>
+        <li><b>명단 동기화</b>: 업로드한 명단을 좌석에 반영. (명단에 없는 사람은 건드리지 않아요)</li>
+      </ul>
+
+      <h4>💾 백업·이력·기타 (관리 도구)</h4>
+      <ul>
+        <li><b>백업 내보내기/가져오기</b>: 작업 중간중간 내보내 저장해 두세요.</li>
+        <li><b>수정 목록</b>: 변경 이력 확인.</li>
+        <li><b>실행 취소</b>: 직전 작업 1단계 되돌리기.</li>
+        <li><b>방문자 통계</b>: 오늘·이번 주·전체 방문 수 확인.</li>
+      </ul>
+
       <p style="color:var(--gray);font-size:12px;">모든 변경은 자동 저장되어 전 직원에게 반영됩니다. (강력 새로고침 Ctrl+Shift+R 후 확인)</p>
-    </div>
+    </div>`;
+
+  pop.innerHTML = `
+    ${isAdmin ? adminHelp : readerHelp}
     <div class="popover-actions">
       <button class="btn btn-close" id="helpCloseBtn" style="flex:1;">닫기</button>
     </div>

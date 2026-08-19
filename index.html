@@ -36,15 +36,43 @@
     margin:0 auto;
   }
   header{
-    padding:18px 20px 14px;
+    padding:10px 20px 10px;
     border-bottom:1px solid var(--line);
     background:var(--white);
   }
+  .header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+  }
+  .collapse-btn{
+    flex-shrink:0;
+    padding:5px 12px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--white);
+    color:var(--gray);
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .collapse-btn:hover{ border-color:var(--gray); color:var(--ink); }
+  #headerCollapsible{
+    overflow:hidden;
+    transition:none;
+  }
+  /* 접힘 상태: 층탭·관리자줄·부제목을 숨겨 배치도 영역을 넓힘 */
+  header.collapsed #headerCollapsible{ display:none; }
+  header.collapsed .title-row .sub{ display:none; }
+  header.collapsed{ padding-bottom:8px; }
   .title-row{
     display:flex;
     align-items:baseline;
     gap:10px;
-    margin-bottom:12px;
+    margin-bottom:0;
   }
   .title-row h1{
     font-family:var(--serif);
@@ -133,7 +161,7 @@
   .tabs{
     display:flex;
     gap:6px;
-    margin-top:12px;
+    margin-top:8px;
     flex-wrap:wrap;
     align-items:center;
   }
@@ -263,7 +291,8 @@
     display:flex;
     align-items:center;
     gap:8px;
-    margin-top:10px;
+    margin-top:8px;
+    flex-wrap:wrap;
   }
   .backup-btn{
     padding:6px 12px;
@@ -1020,29 +1049,34 @@
 </head>
 <body>
 <div class="app">
-  <header>
-    <div class="title-row">
-      <h1>좌석·시설 찾기</h1>
-      <span class="sub">시그니쳐타워 4F · 5F · 7F</span>
+  <header id="appHeader">
+    <div class="header-top">
+      <div class="title-row">
+        <h1>좌석·시설 찾기</h1>
+        <span class="sub">시그니쳐타워 4F · 5F · 7F</span>
+      </div>
+      <button class="collapse-btn" id="collapseBtn" aria-label="상단 메뉴 접기/펴기">▲ 접기</button>
     </div>
     <div class="search-wrap">
       <input class="search-input" id="searchInput" type="text" placeholder="직원 이름으로 검색" autocomplete="off">
       <div class="search-results" id="searchResults"></div>
     </div>
-    <div class="tabs" id="tabs"></div>
-    <div class="backup-row">
-      <span id="adminOnlyBtns">
-        <button class="backup-btn" id="undoBtn" style="display:none;">↩ 실행 취소</button>
-        <button class="backup-btn" id="changeLogBtn">📋 수정 목록</button>
-        <button class="backup-btn" id="exportBtn">⬇ 백업 내보내기</button>
-        <button class="backup-btn" id="importBtn">⬆ 백업 가져오기</button>
-        <button class="backup-btn" id="rosterBtn">📋 명단 엑셀 업로드</button>
-        <button class="backup-btn" id="syncBtn">🔄 명단 동기화</button>
-        <button class="backup-btn" id="visitStatsBtn">📊 방문자 통계</button>
-      </span>
-      <input type="file" id="importFile" accept=".json" style="display:none;">
-      <input type="file" id="rosterFile" accept=".xlsx,.xls" style="display:none;">
-      <span class="backup-hint" id="modeHint">작업 중간중간 내보내기를 눌러 저장해 두세요</span>
+    <div id="headerCollapsible">
+      <div class="tabs" id="tabs"></div>
+      <div class="backup-row">
+        <span id="adminOnlyBtns">
+          <button class="backup-btn" id="undoBtn" style="display:none;">↩ 실행 취소</button>
+          <button class="backup-btn" id="changeLogBtn">📋 수정 목록</button>
+          <button class="backup-btn" id="exportBtn">⬇ 백업 내보내기</button>
+          <button class="backup-btn" id="importBtn">⬆ 백업 가져오기</button>
+          <button class="backup-btn" id="rosterBtn">📋 명단 엑셀 업로드</button>
+          <button class="backup-btn" id="syncBtn">🔄 명단 동기화</button>
+          <button class="backup-btn" id="visitStatsBtn">📊 방문자 통계</button>
+        </span>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+        <input type="file" id="rosterFile" accept=".xlsx,.xls" style="display:none;">
+        <span class="backup-hint" id="modeHint">작업 중간중간 내보내기를 눌러 저장해 두세요</span>
+      </div>
     </div>
   </header>
   <main id="main"></main>
@@ -4617,6 +4651,26 @@ document.getElementById('adminToggleBtn').addEventListener('click', (e)=>{
   }
   openAdminPinPopover(e.currentTarget);
 });
+
+// 상단 메뉴 접기/펴기 (작은 화면에서 배치도를 넓게 보기 위함). 상태는 기기에 저장됨.
+function applyHeaderCollapsed(collapsed){
+  const header = document.getElementById('appHeader');
+  const btn = document.getElementById('collapseBtn');
+  if(!header || !btn) return;
+  header.classList.toggle('collapsed', collapsed);
+  btn.textContent = collapsed ? '▼ 펴기' : '▲ 접기';
+}
+document.getElementById('collapseBtn').addEventListener('click', ()=>{
+  const header = document.getElementById('appHeader');
+  const nowCollapsed = !header.classList.contains('collapsed');
+  applyHeaderCollapsed(nowCollapsed);
+  try{ localStorage.setItem('kr_header_collapsed', nowCollapsed ? '1' : '0'); }catch(e){}
+});
+(function initHeaderCollapse(){
+  let saved = '0';
+  try{ saved = localStorage.getItem('kr_header_collapsed') || '0'; }catch(e){}
+  applyHeaderCollapsed(saved === '1');
+})();
 
 function openAdminPinPopover(anchorEl){
   const pop = document.getElementById('popover');

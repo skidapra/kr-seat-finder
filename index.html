@@ -676,11 +676,11 @@
     z-index:30;
   }
   /* 해외점포는 사무실이 작아 도형이 상대적으로 작게 보이므로, 해당 층에서만 마커를 크게 표시 */
-  .overseas-floor .marker.seat{ width:26px; height:26px; border-width:3px; }
-  .overseas-floor .marker.seat.room-type{ width:30px; height:30px; }
-  .overseas-floor .marker.seat.facility-type{ width:26px; height:26px; }
-  .overseas-floor .marker.zone{ width:32px; height:32px; }
-  .overseas-floor .marker.locker{ width:24px; height:24px; }
+  .overseas-floor .marker.seat, .mokeun-floor .marker.seat{ width:26px; height:26px; border-width:3px; }
+  .overseas-floor .marker.seat.room-type, .mokeun-floor .marker.seat.room-type{ width:30px; height:30px; }
+  .overseas-floor .marker.seat.facility-type, .mokeun-floor .marker.seat.facility-type{ width:26px; height:26px; }
+  .overseas-floor .marker.zone, .mokeun-floor .marker.zone{ width:32px; height:32px; }
+  .overseas-floor .marker.locker, .mokeun-floor .marker.locker{ width:24px; height:24px; }
   @keyframes pulse-red{
     0%{box-shadow:0 0 0 0 rgba(224,54,43,0.7); opacity:1;}
     50%{box-shadow:0 0 0 14px rgba(224,54,43,0); opacity:0.55;}
@@ -1125,7 +1125,11 @@ const FLOOR_IMAGES = {
   "singapore": "singapore.png",
   "tokyo": "tokyo.png",
   "london": "london.jpeg",
-  "dubai": "dubai.png"
+  "dubai": "dubai.png",
+  "mokeun2": "mokeun_2F.jpg",
+  "mokeun3": "mokeun_3F.jpg",
+  "mokeun4": "mokeun_4F.jpg",
+  "mokeun5": "mokeun_5F.jpg"
 };
 let LOCKERS = [{"id": "locker_4F_0", "floor": "4F", "team": "해외사업관리팀", "zone": "4C", "range": "01~12", "count": "12개", "x": 25.7, "y": 33.0}, {"id": "locker_4F_1", "floor": "4F", "team": "정산팀", "zone": "4C", "range": "13~36", "count": "24개", "x": 25.7, "y": 35.2}, {"id": "locker_4F_2", "floor": "4F", "team": "해외특약2팀", "zone": "4C", "range": "37~48", "count": "12개", "x": 25.7, "y": 37.4}, {"id": "locker_4F_3", "floor": "4F", "team": "해외특약1팀", "zone": "4C", "range": "49~60", "count": "12개", "x": 35.9, "y": 34.1}, {"id": "locker_4F_4", "floor": "4F", "team": "해외특종자동차팀", "zone": "4C", "range": "61~72", "count": "12개", "x": 35.9, "y": 36.3}, {"id": "locker_4F_5", "floor": "4F", "team": "해외임의1팀", "zone": "4C", "range": "73~84", "count": "12개", "x": 71.3, "y": 30.8}, {"id": "locker_4F_6", "floor": "4F", "team": "해외임의2팀", "zone": "4C", "range": "85~98", "count": "14개", "x": 71.3, "y": 33.0}, {"id": "locker_4F_7", "floor": "4F", "team": "감사팀", "zone": "4C", "range": "99~103", "count": "5개", "x": 71.3, "y": 35.2}, {"id": "locker_4F_8", "floor": "4F", "team": "법무팀", "zone": "4C", "range": "104~108", "count": "5개", "x": 71.3, "y": 37.4}, {"id": "locker_4F_9", "floor": "4F", "team": "준법감시팀", "zone": "4C", "range": "109~116", "count": "8개", "x": 71.3, "y": 39.6}, {"id": "locker_4F_10", "floor": "4F", "team": "정보기술팀", "zone": "4W", "range": "01~27", "count": "27개", "x": 11.7, "y": 79.2}, {"id": "locker_5F_11", "floor": "5F", "team": "상품개발팀", "zone": "5C", "range": "01~15", "count": "15개", "x": 28.0, "y": 24.9}, {"id": "locker_5F_12", "floor": "5F", "team": "국내생명보험팀", "zone": "5C", "range": "16~30", "count": "15개", "x": 32.4, "y": 25.3}, {"id": "locker_5F_13", "floor": "5F", "team": "해외생명보험팀", "zone": "5C", "range": "31~42", "count": "12개", "x": 32.4, "y": 27.5}, {"id": "locker_5F_14", "floor": "5F", "team": "장기보험팀", "zone": "5C", "range": "43~48", "count": "6개", "x": 32.4, "y": 29.7}, {"id": "locker_5F_15", "floor": "5F", "team": "기획실", "zone": "5C", "range": "49~67", "count": "19개", "x": 78.9, "y": 32.0}, {"id": "locker_5F_16", "floor": "5F", "team": "인사총무팀", "zone": "5C", "range": "68~90", "count": "23개", "x": 78.9, "y": 34.2}, {"id": "locker_5F_17", "floor": "5F", "team": "특종보험팀", "zone": "5W", "range": "01~24", "count": "24개", "x": 19.0, "y": 55.5}, {"id": "locker_5F_18", "floor": "5F", "team": "기술해상보험팀", "zone": "5W", "range": "25~44", "count": "24개", "x": 18.2, "y": 67.7}, {"id": "locker_5F_19", "floor": "5F", "team": "손사위험팀", "zone": "5W", "range": "45~74", "count": "30개", "x": 28.2, "y": 66.2}, {"id": "locker_5F_20", "floor": "5F", "team": "위험자본솔루션팀", "zone": "5W", "range": "75~94", "count": "20개", "x": 32.2, "y": 66.2}, {"id": "locker_5F_21", "floor": "5F", "team": "자동차특수보험팀", "zone": "5W", "range": "95~106", "count": "12개", "x": 32.9, "y": 66.2}, {"id": "locker_5F_22", "floor": "5F", "team": "재물보험팀", "zone": "5W", "range": "107~126", "count": "20개", "x": 34.7, "y": 66.2}, {"id": "locker_5F_23", "floor": "5F", "team": "계리팀", "zone": "5E", "range": "01~15", "count": "15개", "x": 71.9, "y": 66.2}, {"id": "locker_5F_24", "floor": "5F", "team": "결산회계팀", "zone": "5E", "range": "16~30", "count": "15개", "x": 73.8, "y": 64.0}, {"id": "locker_5F_25", "floor": "5F", "team": "보험금융연구소", "zone": "5E", "range": "31~42", "count": "12개", "x": 74.3, "y": 66.2}, {"id": "locker_5F_26", "floor": "5F", "team": "손익분석팀", "zone": "5E", "range": "43~60", "count": "18개", "x": 74.3, "y": 68.4}, {"id": "locker_5F_27", "floor": "5F", "team": "리스크관리팀", "zone": "5E", "range": "61~78", "count": "18개", "x": 87.6, "y": 67.3}, {"id": "locker_5F_28", "floor": "5F", "team": "금융재보험팀", "zone": "5E", "range": "79~90", "count": "12개", "x": 89.6, "y": 67.2}, {"id": "locker_7F_29", "floor": "7F", "team": "미배정", "zone": "7A", "range": "01~06", "count": "6개", "x": 84.1, "y": 13.5}, {"id": "locker_7F_30", "floor": "7F", "team": "운용기획팀", "zone": "7A", "range": "07~18", "count": "11개", "x": 84.1, "y": 15.7}, {"id": "locker_7F_32", "floor": "7F", "team": "자산운용팀", "zone": "7B", "range": "19~30", "count": "12개", "x": 84.1, "y": 20.1}];
 
@@ -1594,7 +1598,11 @@ const DATA = {
    "execOffices": [],
    "zones": [],
    "deptZones": []
-  }
+  },
+  "mokeun2": { "execOffices": [], "zones": [], "deptZones": [] },
+  "mokeun3": { "execOffices": [], "zones": [], "deptZones": [] },
+  "mokeun4": { "execOffices": [], "zones": [], "deptZones": [] },
+  "mokeun5": { "execOffices": [], "zones": [], "deptZones": [] }
  },
  "roomAnchors": {
   "4F": [
@@ -1820,7 +1828,11 @@ const DATA = {
   "singapore": [],
   "tokyo": [],
   "london": [],
-  "dubai": []
+  "dubai": [],
+  "mokeun2": [],
+  "mokeun3": [],
+  "mokeun4": [],
+  "mokeun5": []
  }
 };
 
@@ -1872,11 +1884,11 @@ async function doUndo(){
 
 
 let currentFloor = "5F";
-let seats = { "4F":[], "5F":[], "7F":[], "usa":[], "swiss":[], "shanghai":[], "singapore":[], "tokyo":[], "london":[], "dubai":[] }; // dynamic, user-placed pins: {id, x, y, name, position, ext}
-let addMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false, "dubai":false };
-let lockerAddMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false, "dubai":false };
-let alignMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false, "dubai":false };
-let selectedSeats = { "4F":new Set(), "5F":new Set(), "7F":new Set(), "usa":new Set(), "swiss":new Set(), "shanghai":new Set(), "singapore":new Set(), "tokyo":new Set(), "london":new Set(), "dubai":new Set() };
+let seats = { "4F":[], "5F":[], "7F":[], "usa":[], "swiss":[], "shanghai":[], "singapore":[], "tokyo":[], "london":[], "dubai":[], "mokeun2":[], "mokeun3":[], "mokeun4":[], "mokeun5":[] }; // dynamic, user-placed pins: {id, x, y, name, position, ext}
+let addMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false, "dubai":false, "mokeun2":false, "mokeun3":false, "mokeun4":false, "mokeun5":false };
+let lockerAddMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false, "dubai":false, "mokeun2":false, "mokeun3":false, "mokeun4":false, "mokeun5":false };
+let alignMode = { "4F":false, "5F":false, "7F":false, "usa":false, "swiss":false, "shanghai":false, "singapore":false, "tokyo":false, "london":false, "dubai":false, "mokeun2":false, "mokeun3":false, "mokeun4":false, "mokeun5":false };
+let selectedSeats = { "4F":new Set(), "5F":new Set(), "7F":new Set(), "usa":new Set(), "swiss":new Set(), "shanghai":new Set(), "singapore":new Set(), "tokyo":new Set(), "london":new Set(), "dubai":new Set(), "mokeun2":new Set(), "mokeun3":new Set(), "mokeun4":new Set(), "mokeun5":new Set() };
 let searchDebounce = null;
 let highlighted = null; // {floor, ids:[...], anchor:{x,y,label} optional}
 let highlightTimer = null;
@@ -2277,6 +2289,16 @@ const OVERSEAS_BRANCHES = [
 ];
 
 const OVERSEAS_KEY = 'overseasData';
+
+// 목은관빌딩(국내 별관): 신사옥건립추진단(2·5F), KR파트너스(3·4F). 본사 층과 동일하게 좌석 배치.
+const MOKEUN_FLOORS = [
+  { id:'mokeun2', name:'2F', tenant:'신사옥건립추진단' },
+  { id:'mokeun3', name:'3F', tenant:'KR파트너스' },
+  { id:'mokeun4', name:'4F', tenant:'KR파트너스' },
+  { id:'mokeun5', name:'5F', tenant:'신사옥건립추진단' },
+];
+function mokeunFloorById(floor){ return MOKEUN_FLOORS.find(m=>m.id===floor) || null; }
+
 let OVERSEAS_DATA = {}; // { [branchId]: { address, phone, memo, staff:[{id,name,title,ext,email,memo}], published } }
 
 async function loadOverseasData(){
@@ -2393,7 +2415,36 @@ function renderTabs(){
     tabs.appendChild(wrap);
   }
 
-  // ── 그룹 2: 보기 도구 (전체 목록 + 락커) → 오른쪽 정렬 ──
+  // 목은관빌딩 드롭다운 (해외점포 바로 우측). 2·3·4·5층 배치도.
+  {
+    const wrap = document.createElement('div');
+    wrap.className = 'overseas-wrap';
+    const mkBtn = document.createElement('button');
+    mkBtn.className = 'overseas-btn';
+    mkBtn.textContent = '🏢 목은관 ▾';
+    const menu = document.createElement('div');
+    menu.className = 'overseas-menu';
+    menu.innerHTML = MOKEUN_FLOORS.map(m=>{
+      const cnt = (seats[m.id]||[]).filter(s => s.name && !s.vacant && (s.dept || s.ext)).length;
+      return `<div class="overseas-item ${m.id===currentFloor?'':''}" data-id="${m.id}">
+        <span>${m.name} <span style="color:var(--gray);font-size:11px;">${m.tenant}</span></span>
+        <span class="overseas-badge ${cnt?'ready':''}">${cnt ? cnt+'명' : '보기'}</span>
+      </div>`;
+    }).join('');
+    mkBtn.onclick = (e)=>{ e.stopPropagation(); menu.classList.toggle('show'); };
+    menu.querySelectorAll('.overseas-item').forEach(item=>{
+      item.onclick = (e)=>{
+        e.stopPropagation();
+        menu.classList.remove('show');
+        currentFloor = item.dataset.id;
+        clearUndo();
+        renderAll();
+      };
+    });
+    wrap.appendChild(mkBtn);
+    wrap.appendChild(menu);
+    tabs.appendChild(wrap);
+  }
   const tools = document.createElement('div');
   tools.className = 'tab-tools';
 
@@ -2679,6 +2730,20 @@ function colorForDept(dept){
   return `hsl(${hue}, 62%, 42%)`;
 }
 
+// 특정 파트/팀만 색상을 강제 지정(같은 소속이라 색이 겹치는 경우 구분용). 나머지는 기존 로직 유지.
+const PART_COLOR_OVERRIDE = {
+  '계수3파트': 'hsl(210, 68%, 46%)'  // 계수2파트와 구분되도록 선명한 파랑
+};
+
+// 좌석 색상: 파트/소속에 override가 있으면 그 색, 없으면 기존 소속 기준 색.
+function seatColor(s){
+  const emp = empByName(s.name);
+  const part = s.part || (emp ? emp.part : '') || '';
+  if(part && PART_COLOR_OVERRIDE[part]) return PART_COLOR_OVERRIDE[part];
+  if(s.dept && PART_COLOR_OVERRIDE[s.dept]) return PART_COLOR_OVERRIDE[s.dept];
+  return colorForDept(s.dept);
+}
+
 function isRosterDept(dept){
   return DATA.employees.some(e=>e.dept===dept);
 }
@@ -2910,7 +2975,7 @@ function renderFloor(floor){
     const isFacilityType = isRoomLabel && !isRoomType;
     const isSelected = sel.has(s.id);
     const isOut = !isRoomLabel && !isVacant && isOutsourced(s.dept);
-    const color = (isRoomLabel || isVacant) ? null : (isOut ? '#c9822f' : colorForDept(s.dept));
+    const color = (isRoomLabel || isVacant) ? null : (isOut ? '#c9822f' : seatColor(s));
     const styleAttr = color ? `background:${color};` : '';
     const emp = empByName(s.name);
     const partLabel = s.part || (emp ? emp.part : '') || '';
@@ -2952,9 +3017,11 @@ function renderFloor(floor){
   const overseasBranch = overseasBranchByFloorId(floor);
   const isFreeSeating = overseasBranch && overseasBranch.freeSeating;
   const branchPublished = overseasBranch && branchIsPublished(overseasBranch.id);
+  const mokeunFloor = mokeunFloorById(floor);
 
-  return `<div class="floor-view ${floor===currentFloor?'active':''} ${overseasBranch?'overseas-floor':''}" data-floor="${floor}">
+  return `<div class="floor-view ${floor===currentFloor?'active':''} ${overseasBranch?'overseas-floor':''} ${mokeunFloor?'mokeun-floor':''}" data-floor="${floor}">
     <div class="floor-toolbar">
+      ${mokeunFloor ? `<span class="add-hint" style="font-weight:700;color:var(--ink);">🏢 목은관 ${mokeunFloor.name} <span style="font-weight:500;color:var(--gray);">· ${mokeunFloor.tenant}</span></span>` : ''}
       ${overseasBranch ? `<span class="add-hint" style="font-weight:700;color:var(--ink);">🌐 ${overseasBranch.name} 배치도${isFreeSeating ? ' · 🪑 자율좌석제' : ''}</span>
       <button class="branch-info-toggle" data-floor="${floor}" id="branchInfoFromFloorBtn-${floor}">${isFreeSeating ? '인원 명단 · 사무소 정보' : '사무소 정보'}</button>
       ${isAdmin ? `<span class="branch-pub-badge ${branchPublished?'on':''}">${branchPublished ? '● 전 직원 공개중' : '● 비공개'}</span>

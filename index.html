@@ -2292,10 +2292,10 @@ const OVERSEAS_KEY = 'overseasData';
 
 // 목은관빌딩(국내 별관): 신사옥건립추진단(2·5F), KR파트너스(3·4F). 본사 층과 동일하게 좌석 배치.
 const MOKEUN_FLOORS = [
-  { id:'mokeun2', name:'2F', tenant:'신사옥건립추진단' },
-  { id:'mokeun3', name:'3F', tenant:'KR파트너스' },
-  { id:'mokeun4', name:'4F', tenant:'KR파트너스' },
   { id:'mokeun5', name:'5F', tenant:'신사옥건립추진단' },
+  { id:'mokeun4', name:'4F', tenant:'KR파트너스' },
+  { id:'mokeun3', name:'3F', tenant:'KR파트너스' },
+  { id:'mokeun2', name:'2F', tenant:'신사옥건립추진단' },
 ];
 function mokeunFloorById(floor){ return MOKEUN_FLOORS.find(m=>m.id===floor) || null; }
 

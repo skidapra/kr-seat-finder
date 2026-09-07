@@ -2722,6 +2722,7 @@ function deptShort(s){ return s ? s.replace(/\(.*?\)/,'') : ''; }
 
 function colorForDept(dept){
   if(!dept) return '#8b8b83';
+  if(DEPT_COLOR_OVERRIDE[dept]) return DEPT_COLOR_OVERRIDE[dept];
   let hash = 0;
   for(let i=0; i<dept.length; i++){
     hash = dept.charCodeAt(i) + ((hash << 5) - hash);
@@ -2733,6 +2734,11 @@ function colorForDept(dept){
 // 특정 파트/팀만 색상을 강제 지정(같은 소속이라 색이 겹치는 경우 구분용). 나머지는 기존 로직 유지.
 const PART_COLOR_OVERRIDE = {
   '계수3파트': 'hsl(210, 68%, 46%)'  // 계수2파트와 구분되도록 선명한 파랑
+};
+
+// 팀 색상 강제 지정(자동 계산 시 서로 비슷한 색이 나오는 팀들을 구분). 정규석·외주석 모두 적용.
+const DEPT_COLOR_OVERRIDE = {
+  '손익분석팀': 'hsl(25, 75%, 47%)'   // 운용기획팀(파랑)과 겹쳐서 선명한 주황으로 분리
 };
 
 // 좌석 색상: 파트/소속에 override가 있으면 그 색, 없으면 기존 소속 기준 색.
@@ -2749,7 +2755,19 @@ function isRosterDept(dept){
 }
 
 function isOutsourced(dept){
-  return !!dept && dept.includes('외주업체');
+  return !!dept && dept.includes('외주');
+}
+
+// 팀 구분 없는 일반 외주석(소속이 그냥 '외주업체' 또는 '외주')은 기존처럼 갈색으로 표시.
+// 소속에 팀명이 함께 들어간 외주석(예: '계리팀 외주')은 그 팀 색상으로 구분한다.
+function isGenericOutsourced(dept){
+  const d = (dept||'').trim();
+  return d === '외주' || d === '외주업체';
+}
+// '계리팀 외주' / '계리팀 외주업체' → 팀명('계리팀')을 뽑아 그 팀 색상 사용 (정규석과 같은 색 + 점선 테두리로 외주 구분)
+function outsourcedTeamColor(dept){
+  const base = (dept||'').replace(/\s*외주(업체)?\s*$/, '').trim();
+  return base ? colorForDept(base) : '#c9822f';
 }
 
 function endsWithRoomSuffix(name){
@@ -2975,7 +2993,9 @@ function renderFloor(floor){
     const isFacilityType = isRoomLabel && !isRoomType;
     const isSelected = sel.has(s.id);
     const isOut = !isRoomLabel && !isVacant && isOutsourced(s.dept);
-    const color = (isRoomLabel || isVacant) ? null : (isOut ? '#c9822f' : seatColor(s));
+    const color = (isRoomLabel || isVacant) ? null
+      : (isOut ? (isGenericOutsourced(s.dept) ? '#c9822f' : outsourcedTeamColor(s.dept))
+               : seatColor(s));
     const styleAttr = color ? `background:${color};` : '';
     const emp = empByName(s.name);
     const partLabel = s.part || (emp ? emp.part : '') || '';

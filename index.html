@@ -1993,6 +1993,21 @@ async function loadFloorChunked(floor){
   return result.data;
 }
 
+// 메타 인덱스(seatsMetaAll)에서 해당 층이 누락되어도, 실제 chunk 데이터가 시트에 남아 있으면
+// chunk:0부터 직접 읽어 복구한다. (동시편집 등으로 메타가 덮어써져 좌석이 사라진 것처럼 보일 때)
+async function probeChunks(floor){
+  const parts = [];
+  for(let i=0; i<500; i++){
+    let res = null;
+    try{ res = await gsGet(chunkKey(floor, i)); }catch(e){ break; }
+    if(res && res.value){ parts.push(res.value); } else { break; }
+  }
+  if(!parts.length) return null;
+  const full = parts.join('');
+  const result = tryRecoverTruncatedJsonArray(full);
+  return result ? result.data : null;
+}
+
 const EMPLOYEES_META_KEY = 'employeesMeta';
 function employeesChunkKey(i){ return `employeesData:chunk:${i}`; }
 
@@ -2058,6 +2073,18 @@ async function loadOneFloor(floor){
     }
   }
 
+  if(loaded === null){
+    // 메타 인덱스에서 누락되었지만 실제 chunk 데이터가 남아 있는 경우 직접 복구
+    try{
+      const probed = await probeChunks(floor);
+      if(probed && probed.length){
+        loaded = probed;
+        needsHeal = true; // 복구했으니 메타를 다시 기록해 인덱스를 정상화
+        showToast(`${floor} 좌석 데이터를 복구했어요`);
+      }
+    }catch(e){ console.error('probe recovery failed', floor, e); }
+  }
+
   if(loaded){
     seats[floor] = loaded;
     if(needsHeal) await persistFloorSeats(floor, loaded); // one-time migration only, not on every load
@@ -2114,6 +2141,14 @@ async function persistFloorSeats(floor, seatArr){
     try{
       const results = await Promise.all(chunks.map((c,i)=>gsSet(chunkKey(floor, i), c)));
       if(results.some(r=>!r)) throw new Error('chunk write failed');
+      // 다른 클라이언트(또는 오래된 탭)가 추가한 층 메타를 덮어쓰지 않도록, 원격 메타와 병합 후 기록
+      try{
+        const remote = await gsGet(ALL_META_KEY);
+        if(remote && remote.value){
+          const remoteMeta = JSON.parse(remote.value);
+          floorMetaCache = { ...remoteMeta, ...floorMetaCache };
+        }
+      }catch(e){ /* 원격 메타 병합 실패 시 로컬 값으로 진행 */ }
       floorMetaCache[floor] = {count: chunks.length};
       const metaRes = await gsSet(ALL_META_KEY, JSON.stringify(floorMetaCache));
       if(!metaRes) throw new Error('meta write failed');
